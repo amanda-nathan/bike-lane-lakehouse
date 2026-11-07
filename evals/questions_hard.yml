@@ -21,18 +21,18 @@
 - id: washington_growth
   question: By how much did bike traffic on Washington Street north of Bexley Road grow from 2018 to 2025? Give the change as a fraction.
   reference_sql: >
-    SELECT max(CASE WHEN count_year = 2025 THEN a END) / max(CASE WHEN count_year = 2018 THEN a END) - 1
-    FROM (SELECT count_year, avg(bikes) AS a FROM fct_boston_bike_counts_daily
+    SELECT max(CASE WHEN count_year = 2025 THEN avg_bikes_per_day END) / max(CASE WHEN count_year = 2018 THEN avg_bikes_per_day END) - 1
+    FROM (SELECT count_year, avg(bikes) AS avg_bikes_per_day FROM fct_boston_bike_counts_daily
           WHERE location_name = 'Washington Street north of Bexley Road' AND season = 'Summer' GROUP BY 1)
   accepted_sql:
     - >
-      SELECT max(CASE WHEN count_year = 2025 THEN a END) / max(CASE WHEN count_year = 2018 THEN a END) - 1
-      FROM (SELECT count_year, avg(bikes) AS a FROM fct_boston_bike_counts_daily
+      SELECT max(CASE WHEN count_year = 2025 THEN avg_bikes_per_day END) / max(CASE WHEN count_year = 2018 THEN avg_bikes_per_day END) - 1
+      FROM (SELECT count_year, avg(bikes) AS avg_bikes_per_day FROM fct_boston_bike_counts_daily
             WHERE location_name = 'Washington Street north of Bexley Road' AND season = 'Fall' GROUP BY 1)
     # Summer and fall pooled: the seasons counted in both years. Added after an agent used it.
     - >
-      SELECT max(CASE WHEN count_year = 2025 THEN a END) / max(CASE WHEN count_year = 2018 THEN a END) - 1
-      FROM (SELECT count_year, avg(bikes) AS a FROM fct_boston_bike_counts_daily
+      SELECT max(CASE WHEN count_year = 2025 THEN avg_bikes_per_day END) / max(CASE WHEN count_year = 2018 THEN avg_bikes_per_day END) - 1
+      FROM (SELECT count_year, avg(bikes) AS avg_bikes_per_day FROM fct_boston_bike_counts_daily
             WHERE location_name = 'Washington Street north of Bexley Road' AND season IN ('Summer', 'Fall') GROUP BY 1)
   abs_tolerance: 0.01
   must_mention: It compares the same season in both years, because averaging all seasons is biased (winter and spring counts were added later).
