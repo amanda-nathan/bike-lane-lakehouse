@@ -299,7 +299,7 @@ models:
   - name: fct_nyc_new_lane_safety
     description: >
       Protected lane segments installed 2015 through October 2024, with cyclist-injury crashes
-      within about 50 m in the two years before and after, and citywide cyclist injuries over the
+      within about 50 meters (half a block) in the two years before and after, and citywide cyclist injuries over the
       same windows. A crash near adjacent segments counts once per segment.
     config:
       contract: {enforced: true}

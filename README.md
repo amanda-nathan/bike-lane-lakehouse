@@ -7,7 +7,7 @@ I live near Hyde Park Ave in Roslindale, which has no bike lane; the City is [lo
 **Bottom line**
 
 - **Riding near me is up.** Summer bike counts on Washington St in Roslindale went from about 330 a day in 2018 to 574 in 2026, while car traffic stayed flat. Each summer is only two count days, so treat the size of the jump as rough.
-- **The NYC data can't show whether protected lanes make streets safer.** Cyclists hurt within 50 m of new lanes rose 17%, against 1.7% citywide, but lanes go where riding is growing and there's no per-street ridership count to adjust for it.
+- **The NYC data can't show whether protected lanes make streets safer.** Cyclists hurt within about 50 meters (half a block) of new lanes rose 17%, against 1.7% citywide, but lanes go where riding is growing and there's no per-street ridership count to adjust for it.
 - **Putting the caveats in the metrics made AI answers more honest.** Asked through MCP, a small model gave the right number and the right caveat 29 of 30 times using the metrics, and 26 of 30 writing its own SQL. A large model got all 30 either way ([eval](evals/RESULTS.md)).
 
 ![Cyclists hurt near new NYC protected lanes vs. citywide](docs/img/new_lanes_by_borough.png)

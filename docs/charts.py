@@ -26,8 +26,8 @@ ORANGE = "#eb6834"
 
 plt.rcParams.update(
     {
-        "font.family": ["Helvetica Neue", "Arial"],
-        "font.size": 10,
+        "font.family": ["DejaVu Sans"],  # ships with matplotlib, so charts render the same on any machine
+        "font.size": 9,
         "text.color": INK,
         "axes.labelcolor": INK_2,
         "axes.edgecolor": GRID,
@@ -46,7 +46,7 @@ def query(sql: str) -> list[list]:
 
 
 def finish(ax, title: str, subtitle: str) -> None:
-    ax.set_title(title, loc="left", fontsize=12, fontweight="bold", pad=22)
+    ax.set_title(title, loc="left", fontsize=12, fontweight="bold", pad=10 + 12 * (subtitle.count("\n") + 1))
     ax.text(0, 1.02, subtitle, transform=ax.transAxes, fontsize=9, color=INK_2, va="bottom")
     for side in ("top", "right", "left"):
         ax.spines[side].set_visible(False)
@@ -67,10 +67,10 @@ def lanes_by_borough() -> None:
     near = [r[1] * 100 for r in rows]
     city = [r[2] * 100 for r in rows]
 
-    fig, ax = plt.subplots(figsize=(7.2, 3.9))
+    fig, ax = plt.subplots(figsize=(7.2, 4.4))
     y = range(len(areas))
     h = 0.34
-    ax.barh([i + h / 2 + 0.02 for i in y], near, height=h, color=BLUE, label="Within 50 m of new protected lanes")
+    ax.barh([i + h / 2 + 0.02 for i in y], near, height=h, color=BLUE, label="Within about 50 meters (half a block) of new protected lanes")
     ax.barh([i - h / 2 - 0.02 for i in y], city, height=h, color=GRAY, label="Citywide, same two-year windows")
     for i, (n, c) in enumerate(zip(near, city)):
         ax.text(max(n, 0) + 0.8, i + h / 2 + 0.02, f"{n:+.0f}%" if abs(n) >= 1 else f"{n:+.1f}%", va="center", fontsize=9, color=INK)
@@ -81,9 +81,9 @@ def lanes_by_borough() -> None:
     ax.set_axisbelow(True)
     ax.set_xlim(min(min(city), 0) - 2, max(near) + 8)
     ax.xaxis.set_major_formatter(lambda v, _: f"{v:+.0f}%" if v else "0")
-    ax.legend(loc="upper center", bbox_to_anchor=(0.45, -0.1), ncol=2, frameon=False, fontsize=9)
+    ax.legend(loc="upper left", bbox_to_anchor=(0, -0.1), ncol=1, frameon=False, fontsize=9)
     finish(ax, "Cyclists hurt, 2 years after vs. 2 years before a protected lane",
-           "NYC lanes installed 2015 to Oct 2024. Not adjusted for more people riding. Staten Island left out (1 injury before).")
+           "NYC lanes installed 2015 to Oct 2024. Not adjusted for more people riding.\nStaten Island left out (1 injury before).")
     fig.tight_layout()
     fig.savefig(OUT / "new_lanes_by_borough.png")
     plt.close(fig)

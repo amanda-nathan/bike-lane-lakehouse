@@ -394,7 +394,7 @@ metrics:
 
   - name: new_lane_injury_change
     label: Change in cyclists hurt near new lanes
-    description: (after - before) / before, for cyclists hurt within about 50 m of new protected lanes.
+    description: (after - before) / before, for cyclists hurt within about 50 meters (half a block) of new protected lanes.
     type: derived
     type_params:
       expr: cast(after - before as double) / nullif(before, 0)
