@@ -96,17 +96,21 @@ URL: `https://bikelake-mcp-140130294299.us-east1.run.app/mcp`
 | MCP Inspector | Free | Run the tools yourself: SQL, metrics, table docs. No AI. |
 | Claude Code | Needs a paid Claude plan | Ask questions in plain English; Claude picks the tools |
 
-The first request after the server has been idle takes about 20 seconds.
+The first request after the server has been idle can take 20 seconds to a minute while Trino starts.
 
 ### Free: MCP Inspector
 
 Needs [Node.js](https://nodejs.org).
 
+![MCP Inspector listing the bikelake tools, running list_metrics, query_metrics, and run_sql, and refusing a DELETE](docs/mcp-inspector.gif)
+
+Recorded against a local copy of the server, so no access key is on screen. For the public server, use its URL and add the header in step 3.
+
 1. Run `npx @modelcontextprotocol/inspector`. It opens in your browser.
-2. Add a server: choose **Streamable HTTP** and paste the URL above. (Or **Clone** the example HTTP server and **Edit** its URL.)
+2. **Add Servers > Add manually**, choose **streamable-http**, and paste the URL above.
 3. In that server's **Settings**, add a header: name `Authorization`, value `Bearer ACCESS_KEY`.
-4. Flip the server's toggle. It should say **Connected**.
-5. Open **Tools** at the top, pick **run_sql**, paste a query, and click **Run Tool**:
+4. Flip the server's switch. It should say **Connected**.
+5. Open **Tools** at the top, pick **run_sql**, paste a query, and click **Execute Tool**:
    ```sql
    SELECT count_year, round(avg(bikes)) AS bikes_per_day, count(*) AS count_days
    FROM fct_boston_bike_counts_daily
