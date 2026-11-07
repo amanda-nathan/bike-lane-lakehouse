@@ -10,4 +10,4 @@ bikelake:
       http_scheme: http
       database: iceberg
       schema: marts
-      threads: 4
+      threads: "{{ env_var('DBT_THREADS', '4') | int }}"

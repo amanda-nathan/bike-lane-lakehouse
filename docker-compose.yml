@@ -85,7 +85,7 @@ services:
     image: trinodb/trino:476
     # Trino sizes its heap to 80% of the memory it sees. Without a limit it sees all of
     # Docker's memory and gets killed when other services need some.
-    mem_limit: 5g
+    mem_limit: ${TRINO_MEMORY:-5g}
     depends_on:
       - iceberg-rest
       - postgres

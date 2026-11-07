@@ -7,6 +7,8 @@ from contextlib import contextmanager
 from pathlib import Path, PurePosixPath
 from urllib.parse import urlparse
 
+import os
+
 import requests
 
 from bikelake import storage
@@ -34,9 +36,13 @@ def extract(source: Source, force: bool = False) -> None:
             continue
 
         print(f"get   {url}")
+        headers = {}
+        # NYC Open Data throttles anonymous requests from shared cloud machines; a free app token lifts that.
+        if "data.cityofnewyork.us" in url and os.getenv("SOCRATA_APP_TOKEN"):
+            headers["X-App-Token"] = os.environ["SOCRATA_APP_TOKEN"]
         with tempfile.TemporaryDirectory() as tmp:
             download = Path(tmp) / "download"
-            with requests.get(url, stream=True, timeout=300) as resp:
+            with requests.get(url, stream=True, timeout=300, headers=headers) as resp:
                 resp.raise_for_status()
                 with open(download, "wb") as f:
                     for chunk in resp.iter_content(chunk_size=1 << 20):

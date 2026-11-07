@@ -23,6 +23,10 @@ jobs:
       R2_TOKEN: ${{ secrets.R2_TOKEN }}
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }} # optional
+      # The runner has 16 GB; give Trino more than the laptop default and build fewer models at once.
+      TRINO_MEMORY: 10g
+      DBT_THREADS: "2"
     steps:
       - uses: actions/checkout@v4
 
@@ -55,3 +59,7 @@ jobs:
 
       - name: Load, build, test, and publish
         run: uv run dagster asset materialize -m bikelake.defs --select '*public/marts'
+
+      - name: Show Trino's log if something failed
+        if: failure()
+        run: docker compose logs trino --tail 80
