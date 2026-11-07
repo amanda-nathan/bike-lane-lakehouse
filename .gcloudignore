@@ -1,0 +1,3 @@
+# What gcloud builds submit leaves out of the upload. Same as .gitignore, plus git history.
+.git
+#!include:.gitignore
