@@ -91,39 +91,14 @@ A public copy of the MCP server runs on Google Cloud Run and reads the mart tabl
 
 URL: `https://bikelake-mcp-140130294299.us-east1.run.app/mcp`
 
+Two ways to use it:
+
 | | Cost to you | What you get |
 |---|---|---|
-| MCP Inspector | Free | Run the tools yourself: SQL, metrics, table docs. No AI. |
-| Claude Code | Needs a paid Claude plan | Ask questions in plain English; Claude picks the tools |
+| [Claude Code](#claude-code) | Needs a paid Claude plan | Ask questions in plain English; Claude picks the tools and explains the answer |
+| [MCP Inspector](docs/inspector/README.md) | Free | No AI: run the same tools yourself and see exactly what they return |
 
 The first request after the server has been idle can take 20 seconds to a minute while Trino starts.
-
-### Free: MCP Inspector
-
-Needs [Node.js](https://nodejs.org).
-
-![MCP Inspector listing the bikelake tools, running list_metrics, query_metrics, and run_sql, and refusing a DELETE](docs/mcp-inspector.gif)
-
-Recorded against a local copy of the server, so no access key is on screen. For the public server, use the URL `https://bikelake-mcp-140130294299.us-east1.run.app/mcp` and add the header `Authorization: Bearer <your access key>` ([step 3](#free-mcp-inspector) below).
-
-1. Run `npx @modelcontextprotocol/inspector`. It opens in your browser.
-2. **Add Servers > Add manually**, choose **streamable-http**, and paste the server URL: `https://bikelake-mcp-140130294299.us-east1.run.app/mcp`
-3. On the new server's card, click **Settings > Custom Headers > + Add Header**. Key: `Authorization`. Value: `Bearer`, a space, then the access key you were sent. Close the window; it saves by itself.
-
-   ![Custom Headers with Key Authorization and Value Bearer plus a practice key](docs/inspector/key-header.png)
-
-   If it says "Missing or wrong access key", the value is usually missing `Bearer ` in front. Step-by-step video with the fix: [docs/inspector/how-to-add-your-access-key.mp4](docs/inspector/how-to-add-your-access-key.mp4) (a practice server and key, no real key shown).
-4. Flip the server's switch. It should say **Connected**.
-
-   ![The server card showing Connected](docs/inspector/connected.png)
-5. Open **Tools** at the top, pick **run_sql**, paste a query, and click **Execute Tool**:
-   ```sql
-   SELECT count_year, round(avg(bikes)) AS bikes_per_day, count(*) AS count_days
-   FROM fct_boston_bike_counts_daily
-   WHERE location_name = 'Washington Street north of Bexley Road' AND season = 'Summer'
-   GROUP BY count_year ORDER BY count_year
-   ```
-   Or pick **query_metrics** with metrics `["new_lane_injury_change", "citywide_injury_change"]` and group_by `["lane_segment__borough"]` to get a metric with its caveats.
 
 ### Claude Code
 
@@ -139,8 +114,6 @@ Recorded against a local copy of the server, so no access key is on screen. For 
    - *Using bikelake, did new protected bike lanes in NYC make streets more dangerous for cyclists?*
 
 To remove it later: `claude mcp remove bikelake -s user`. The Claude desktop and web apps can add it as a custom connector with the same header; that hasn't been tested here.
-
-How it's deployed and run: [cloudrun/README.md](cloudrun/README.md).
 
 ### Example
 
@@ -161,6 +134,12 @@ Claude looked up the location, queried the summer metric, then checked the indiv
 > Flat from 2018 to 2023, then a step up from 2024. Every count day since 2024 (458–593 bikes) is higher than every count day from 2018 to 2023. Car traffic stayed around 16,000–17,000 a day, so the share rose because there were more bikes.
 >
 > Caveats: each summer is 2 count days, so one day moves the average a lot. One 2018 day was rainy; using only the dry day, the increase is about 58%, not 74%. "Summer" means weekdays in early June. The data can't say why counts rose.
+
+### Free alternative: MCP Inspector
+
+The [MCP Inspector](docs/inspector/README.md) is a free tool for trying the server in your browser, with no AI and no paid plan. It doesn't answer questions in plain English the way Claude does. Instead it shows exactly what Claude is given: the four tools, the rows, the SQL the semantic layer wrote, and each metric's caveats. It's also a quick way to check the numbers behind an answer, or to watch `run_sql` refuse a `DELETE`. Steps, screenshots, and a video: [docs/inspector/README.md](docs/inspector/README.md).
+
+How it's deployed and run: [cloudrun/README.md](cloudrun/README.md).
 
 ## Eval
 
