@@ -51,17 +51,48 @@ Ports are bound to 127.0.0.1 only. To use the MCP server from Claude Code: `clau
 
 ## Use the public server
 
-A public copy of the MCP server runs on Google Cloud Run and reads the mart tables from Cloudflare R2 with a read-only key. Nothing to install except an MCP client. It needs an access key; email me for one.
+A public copy of the MCP server runs on Google Cloud Run and reads the mart tables from Cloudflare R2 with a read-only key. Every request needs an access key: email me at hattawaya@gmail.com for one. Opening the URL in a browser shows "Missing or wrong access key"; that's expected.
 
-With [Claude Code](https://claude.com/claude-code):
+URL: `https://bikelake-mcp-140130294299.us-east1.run.app/mcp`
 
-```bash
-claude mcp add --scope user --transport http bikelake \
-  https://bikelake-mcp-140130294299.us-east1.run.app/mcp \
-  --header "Authorization: Bearer <access key>"
-```
+| | Cost to you | What you get |
+|---|---|---|
+| MCP Inspector | Free | Run the tools yourself: SQL, metrics, table docs. No AI. |
+| Claude Code | Needs a paid Claude plan | Ask questions in plain English; Claude picks the tools |
 
-Start a new session, check `/mcp` shows bikelake as connected, and ask a question. The first one after the server has been idle takes about 20 seconds. Opening the URL in a browser shows "Missing or wrong access key"; that's expected.
+The first request after the server has been idle takes about 20 seconds.
+
+### Free: MCP Inspector
+
+Needs [Node.js](https://nodejs.org).
+
+1. Run `npx @modelcontextprotocol/inspector`. It opens in your browser.
+2. Add a server: choose **Streamable HTTP** and paste the URL above. (Or **Clone** the example HTTP server and **Edit** its URL.)
+3. In that server's **Settings**, add a header: name `Authorization`, value `Bearer ACCESS_KEY`.
+4. Flip the server's toggle. It should say **Connected**.
+5. Open **Tools** at the top, pick **run_sql**, paste a query, and click **Run Tool**:
+   ```sql
+   SELECT count_year, round(avg(bikes)) AS bikes_per_day, count(*) AS count_days
+   FROM fct_boston_bike_counts_daily
+   WHERE location_name = 'Washington Street north of Bexley Road' AND season = 'Summer'
+   GROUP BY count_year ORDER BY count_year
+   ```
+   Or pick **query_metrics** with metrics `["new_lane_injury_change", "citywide_injury_change"]` and group_by `["lane_segment__borough"]` to get a metric with its caveats.
+
+### Claude Code
+
+1. Add the server:
+   ```bash
+   claude mcp add --scope user --transport http bikelake \
+     https://bikelake-mcp-140130294299.us-east1.run.app/mcp \
+     --header "Authorization: Bearer ACCESS_KEY"
+   ```
+2. Start `claude`. `/mcp` should show bikelake as connected.
+3. Ask, and allow the bikelake tools when asked. For example:
+   - *Using bikelake, how have summer bike counts on Washington St in Roslindale changed since 2018?*
+   - *Using bikelake, did new protected bike lanes in NYC make streets more dangerous for cyclists?*
+
+To remove it later: `claude mcp remove bikelake -s user`. The Claude desktop and web apps can add it as a custom connector with the same header; that hasn't been tested here.
 
 How it's deployed and run: [cloudrun/README.md](cloudrun/README.md).
 
