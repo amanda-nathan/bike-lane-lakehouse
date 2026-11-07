@@ -104,7 +104,7 @@ Needs [Node.js](https://nodejs.org).
 
 ![MCP Inspector listing the bikelake tools, running list_metrics, query_metrics, and run_sql, and refusing a DELETE](docs/mcp-inspector.gif)
 
-Recorded against a local copy of the server, so no access key is on screen. For the public server, use its URL and add the header in step 3.
+Recorded against a local copy of the server, so no access key is on screen. For the public server, use the URL `https://bikelake-mcp-140130294299.us-east1.run.app/mcp` and add the header `Authorization: Bearer <your access key>` ([step 3](#free-mcp-inspector) below).
 
 1. Run `npx @modelcontextprotocol/inspector`. It opens in your browser.
 2. **Add Servers > Add manually**, choose **streamable-http**, and paste the server URL: `https://bikelake-mcp-140130294299.us-east1.run.app/mcp`
