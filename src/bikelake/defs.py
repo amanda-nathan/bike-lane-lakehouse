@@ -11,9 +11,11 @@ from dagster import (
     AssetKey,
     AssetCheckSeverity,
     AssetSelection,
+    Backoff,
     Definitions,
     MaterializeResult,
     MetadataValue,
+    RetryPolicy,
     ScheduleDefinition,
     asset,
     asset_check,
@@ -50,6 +52,8 @@ def raw_asset(source: Source):
         kinds={"python", "iceberg"},
         description=source.description,
         metadata={"docs": MetadataValue.url(source.docs), "table": f"iceberg.raw.{source.name}"},
+        # Source sites sometimes return 503s; try again before failing the run.
+        retry_policy=RetryPolicy(max_retries=3, delay=30, backoff=Backoff.EXPONENTIAL),
     )
     def _asset() -> MaterializeResult:
         extract(source, force=source.files_change)

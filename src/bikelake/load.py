@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 import pyarrow as pa
 import pyarrow.csv as pacsv
 from pyiceberg.catalog import load_catalog
-from pyiceberg.exceptions import NoSuchTableError
+from pyiceberg.exceptions import NoSuchTableError, ServerError
 
 from bikelake import storage
 from bikelake.config import CATALOG_PROPS
@@ -67,7 +67,12 @@ def load(source: Source) -> LoadResult:
     data = data.append_column("_loaded_at", pa.array([loaded_at] * len(data), pa.timestamp("us", tz="UTC")))
 
     cat = catalog()
-    cat.create_namespace_if_not_exists(NAMESPACE)
+    try:
+        cat.create_namespace_if_not_exists(NAMESPACE)
+    except ServerError:
+        # On an empty catalog, loads running in parallel race to create the namespace.
+        if (NAMESPACE,) not in cat.list_namespaces():
+            raise
     identifier = f"{NAMESPACE}.{source.name}"
     added, missing = [], []
     try:
