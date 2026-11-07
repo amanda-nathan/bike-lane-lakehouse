@@ -89,13 +89,14 @@ NYC Open Data sometimes turns away anonymous downloads from GitHub's machines wi
 
 A public copy of the MCP server runs on Google Cloud Run and reads the mart tables from Cloudflare R2 with a read-only key. Every request needs an access key: email me at hattawaya@gmail.com for one. Opening the URL in a browser shows "Missing or wrong access key"; that's expected.
 
-URL: `https://bikelake-mcp-140130294299.us-east1.run.app/mcp`
+URL: `https://bikelake-mcp-140130294299.us-east1.run.app/mcp` (Cloud Run gives each service an address like this: the service name, the Google Cloud project number, and the region)
 
-Two ways to use it:
+Three ways to use it:
 
 | | Cost to you | What you get |
 |---|---|---|
 | [Claude Code](#claude-code) | Needs a paid Claude plan | Ask questions in plain English; Claude picks the tools and explains the answer |
+| [LibreChat](docs/librechat/README.md) | Free app; you pay for the model (Claude Haiku: under a cent a question) or run a free one locally | Ask in plain English in an open-source chat app you run yourself, with the model you choose |
 | [MCP Inspector](docs/inspector/README.md) | Free | No AI: run the same tools yourself and see exactly what they return |
 
 The first request after the server has been idle can take 20 seconds to a minute while Trino starts.
@@ -134,6 +135,10 @@ Claude looked up the location, queried the summer metric, then checked the indiv
 > Flat from 2018 to 2023, then a step up from 2024. Every count day since 2024 (458–593 bikes) is higher than every count day from 2018 to 2023. Car traffic stayed around 16,000–17,000 a day, so the share rose because there were more bikes.
 >
 > Caveats: each summer is 2 count days, so one day moves the average a lot. One 2018 day was rainy; using only the dry day, the increase is about 58%, not 74%. "Summer" means weekdays in early June. The data can't say why counts rose.
+
+### LibreChat
+
+[LibreChat](docs/librechat/README.md) is a free, open-source chat app you run in Docker. You add the server once in its config file, each person types their own access key into the app, and then you ask questions in plain English with Claude or another model. Boston University's TerrierGPT is built on LibreChat. Setup, the config, and screenshots of every step: [docs/librechat/README.md](docs/librechat/README.md).
 
 ### Free alternative: MCP Inspector
 
