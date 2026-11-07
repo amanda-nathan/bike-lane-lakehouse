@@ -20,6 +20,7 @@ target/
 dbt_packages/
 logs/
 .dagster/
+.user.yml
 .tmp_dagster_home*/
 
 .DS_Store

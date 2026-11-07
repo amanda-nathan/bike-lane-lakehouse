@@ -20,3 +20,4 @@ models:
 
 flags:
   require_certificate_validation: true
+  send_anonymous_usage_stats: false

@@ -48,6 +48,43 @@ Then open Dagster, go to **Catalog**, select all assets, and click **Materialize
 
 Ports are bound to 127.0.0.1 only. To use the MCP server from Claude Code: `claude mcp add --transport http bikelake http://localhost:8000/mcp`.
 
+
+## Use the public server
+
+A public copy of the MCP server runs on Google Cloud Run and reads the mart tables from Cloudflare R2 with a read-only key. Nothing to install except an MCP client. It needs an access key; email me for one.
+
+With [Claude Code](https://claude.com/claude-code):
+
+```bash
+claude mcp add --scope user --transport http bikelake \
+  https://bikelake-mcp-140130294299.us-east1.run.app/mcp \
+  --header "Authorization: Bearer <access key>"
+```
+
+Start a new session, check `/mcp` shows bikelake as connected, and ask a question. The first one after the server has been idle takes about 20 seconds. Opening the URL in a browser shows "Missing or wrong access key"; that's expected.
+
+How it's deployed and run: [cloudrun/README.md](cloudrun/README.md).
+
+### Example
+
+Asked in Claude Code, connected to the public server on Cloud Run (November 2026):
+
+> Using bikelake, how have summer bike counts on Washington St in Roslindale changed since 2018?
+
+Claude looked up the location, queried the summer metric, then checked the individual count days. Its answer, shortened:
+
+| Summer | Bikes/day | Count days | Bike share of traffic |
+|---|---|---|---|
+| 2018 | 331 | 2 | 1.9% |
+| 2023 | 328 | 2 | 1.9% |
+| 2024 | 468 | 2 | 2.7% |
+| 2025 | 547 | 2 | 3.2% |
+| 2026 | 574 | 2 | 3.5% |
+
+> Flat from 2018 to 2023, then a step up from 2024. Every count day since 2024 (458–593 bikes) is higher than every count day from 2018 to 2023. Car traffic stayed around 16,000–17,000 a day, so the share rose because there were more bikes.
+>
+> Caveats: each summer is 2 count days, so one day moves the average a lot. One 2018 day was rainy; using only the dry day, the increase is about 58%, not 74%. "Summer" means weekdays in early June. The data can't say why counts rose.
+
 ## Eval
 
 Claude answered questions through the MCP server with SQL tools only, and with the metrics preferred. On hard questions, Opus 5.5 got every answer right either way. Haiku 5.5 got 26 of 30 with SQL only and 29 of 30 with the metrics, mostly because the metric's caveats came along. Two answers I first marked wrong turned out to be better than my answer key. Details and cost: [evals/RESULTS.md](evals/RESULTS.md).
@@ -74,4 +111,4 @@ Schedules: NYC crashes daily, the other sources weekly, Bluebikes monthly, stati
 - Compaction and snapshot expiry jobs; incremental loads for NYC crashes
 - Trino access control and column masking
 - CI
-- Public version: data on Cloudflare R2, Trino and the MCP server on a Hugging Face Space, loads on GitHub Actions
+- `space/` is a Hugging Face Space version of the public server. It wasn't deployed: Hugging Face now requires a PRO subscription to run Docker Spaces on free hardware.

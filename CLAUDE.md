@@ -66,6 +66,7 @@ docker compose down -v                               # stop and delete all data
 - Staging models are views named `stg_<source>__<entity>`. Marts are tables with enforced contracts; when a mart column changes, update its `data_type` in `_marts.yml`.
 - Metrics live in `dbt/models/marts/_semantic.yml`. Anything that would mislead someone reading the number goes in `config.meta.caveats`. Derived ratios cast to double (`cast(x as double) / y`); `* 1.0` keeps Trino in decimals and rounds.
 - Before stating a data fact in docs or caveats, check it with a query.
+- The public MCP server (Cloud Run) requires `MCP_ACCESS_KEY` as a Bearer token; settings go in as env vars, credentials as secrets (`cloudrun/deploy.sh`).
 - The MCP server only reads `iceberg.marts`. Keep `warehouse.check_sql` strict and covered by `tests/test_sql_guard.py`.
 - Secrets only come from the environment. Never put a password or key in a tracked file. New secrets go in `.env.example` with `change-me`.
 - New services bind ports to 127.0.0.1. Services that run a JVM get a `mem_limit`.
