@@ -75,7 +75,7 @@ Then open Dagster, go to **Catalog**, select all assets, and click **Materialize
 | Trino | http://localhost:8080, or `docker compose exec trino trino` |
 | Storage console | http://localhost:9001/rustfs/console/ |
 
-Ports are bound to 127.0.0.1 only. To use the MCP server from Claude Code: `claude mcp add --transport http bikelake http://localhost:8000/mcp`.
+Everything is reachable only from your own computer (ports are bound to 127.0.0.1). To ask questions of your local copy from Claude Code, run: `claude mcp add --transport http bikelake http://localhost:8000/mcp`
 
 ## How the public data stays current
 
