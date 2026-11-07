@@ -1,0 +1,57 @@
+name: Refresh public data
+
+# Daily: load every source into a temporary lakehouse on the runner, build the dbt models
+# and tests, and publish the marts to Cloudflare R2. The public MCP server reads R2, so it
+# serves the new data without a redeploy. Same Dagster job as the local stack.
+on:
+  schedule:
+    - cron: "30 10 * * *" # 6:30 am Eastern in summer, 5:30 in winter
+  workflow_dispatch:
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      R2_CATALOG_URI: ${{ secrets.R2_CATALOG_URI }}
+      R2_WAREHOUSE: ${{ secrets.R2_WAREHOUSE }}
+      R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+      R2_TOKEN: ${{ secrets.R2_TOKEN }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Throwaway passwords for the temporary stack
+        run: |
+          {
+            echo "S3_ACCESS_KEY=admin"
+            echo "S3_SECRET_KEY=$(openssl rand -hex 16)"
+            echo "POSTGRES_USER=bikes"
+            echo "POSTGRES_PASSWORD=$(openssl rand -hex 16)"
+            echo "POSTGRES_DB=bikes"
+          } > .env
+
+      - name: Start storage, catalog, and Trino
+        run: |
+          docker compose up -d rustfs iceberg-rest postgres trino
+          for i in $(seq 1 60); do
+            curl -sf localhost:8080/v1/info | grep -q '"starting":false' && exit 0
+            sleep 5
+          done
+          docker compose logs --tail 50
+          exit 1
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Install
+        run: |
+          uv sync --frozen --no-dev
+          uv run dbt parse --project-dir dbt --profiles-dir dbt --quiet
+
+      - name: Load, build, test, and publish
+        run: uv run dagster asset materialize -m bikelake.defs --select '*public/marts'
