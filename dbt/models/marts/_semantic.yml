@@ -1,0 +1,444 @@
+# Semantic models and metrics (dbt Semantic Layer / MetricFlow spec).
+# Each metric's config.meta.caveats travels with it to the MCP server, so an answer
+# built on the metric carries the same warnings an analyst would give.
+
+semantic_models:
+  - name: boston_bike_counts
+    description: Boston automated bike counts, one row per location per count day.
+    model: ref('fct_boston_bike_counts_daily')
+    defaults:
+      agg_time_dimension: count_date
+    entities:
+      - name: count_day
+        type: primary
+        expr: count_day_id
+      - name: location
+        type: foreign
+        expr: location_id
+    dimensions:
+      - name: count_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: season
+        type: categorical
+      - name: count_year
+        type: categorical
+      - name: location_name
+        type: categorical
+    measures:
+      - name: count_bikes
+        description: Bikes counted.
+        agg: sum
+        expr: bikes
+      - name: count_traffic
+        description: Bikes plus motor vehicles counted.
+        agg: sum
+        expr: bikes + vehicles
+      - name: count_days
+        description: Location-days counted.
+        agg: sum
+        expr: "1"
+      - name: count_bikes_average
+        description: Average bikes per location-day.
+        agg: average
+        expr: bikes
+
+  - name: boston_crashes
+    description: Boston Vision Zero crashes (EMS dispatches).
+    model: ref('fct_boston_crashes')
+    defaults:
+      agg_time_dimension: crash_date
+    entities:
+      - name: boston_crash
+        type: primary
+        expr: crash_id
+    dimensions:
+      - name: crash_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: mode
+        type: categorical
+      - name: street
+        type: categorical
+    measures:
+      - name: boston_crash_count
+        agg: sum
+        expr: "1"
+
+  - name: bluebikes_trips
+    description: Bluebikes trips, rolled up per day, start station, member type, and bike type.
+    model: ref('fct_bluebikes_trips_daily')
+    defaults:
+      agg_time_dimension: trip_date
+    entities:
+      - name: trip_day
+        type: primary
+        expr: trip_day_id
+      - name: station
+        type: foreign
+        expr: start_station_id
+    dimensions:
+      - name: trip_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: member_type
+        type: categorical
+      - name: rideable_type
+        type: categorical
+      - name: start_station_name
+        type: categorical
+    measures:
+      - name: trip_count
+        agg: sum
+        expr: trips
+      - name: trips_with_duration
+        agg: sum
+      - name: trip_minutes
+        agg: sum
+        expr: total_duration_minutes
+
+  - name: nyc_crashes
+    description: NYC crashes from NYPD reports, one row per collision.
+    model: ref('fct_nyc_crashes')
+    defaults:
+      agg_time_dimension: crash_date
+    entities:
+      - name: collision
+        type: primary
+        expr: collision_id
+    dimensions:
+      - name: crash_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: borough
+        type: categorical
+      - name: contributing_factor
+        type: categorical
+    measures:
+      - name: nyc_crash_count
+        agg: sum
+        expr: "1"
+      - name: nyc_cyclist_injury_crash_count
+        description: Crashes in which at least one cyclist was hurt.
+        agg: sum
+        expr: case when cyclists_hurt > 0 then 1 else 0 end
+      - name: nyc_cyclists_injured_sum
+        agg: sum
+        expr: cyclists_injured
+      - name: nyc_cyclists_killed_sum
+        agg: sum
+        expr: cyclists_killed
+      - name: nyc_pedestrians_killed_sum
+        agg: sum
+        expr: pedestrians_killed
+
+  - name: nyc_new_lane_safety
+    description: Protected lane segments installed 2015 to Oct 2024, with nearby cyclist injuries two years before and after.
+    model: ref('fct_nyc_new_lane_safety')
+    defaults:
+      agg_time_dimension: installed_on
+    entities:
+      - name: lane_segment
+        type: primary
+        expr: segment_id
+    dimensions:
+      - name: installed_on
+        type: time
+        type_params:
+          time_granularity: day
+      - name: install_year
+        type: categorical
+      - name: borough
+        type: categorical
+      - name: street
+        type: categorical
+    measures:
+      - name: lane_segment_count
+        agg: sum
+        expr: "1"
+      - name: hurt_before
+        agg: sum
+        expr: cyclists_hurt_before
+      - name: hurt_after
+        agg: sum
+        expr: cyclists_hurt_after
+      - name: citywide_hurt_before
+        agg: sum
+        expr: citywide_cyclists_hurt_before
+      - name: citywide_hurt_after
+        agg: sum
+        expr: citywide_cyclists_hurt_after
+
+metrics:
+  # Boston bike counts
+  - name: boston_avg_bikes_per_day
+    label: Boston bikes per count day
+    description: Average bikes counted per location per count day.
+    type: simple
+    type_params:
+      measure: count_bikes_average
+    config:
+      meta:
+        caveats:
+          - Each location is counted for about two days, a few times a year. Small samples move a lot.
+          - Compare the same season across years. Since 2020 the City also counts in winter and spring, which lowers all-season averages.
+          - Report count_days alongside this metric so the sample size is visible.
+
+  - name: boston_count_days
+    label: Boston count days
+    description: Number of location-days counted. Use it to show how much data is behind an average.
+    type: simple
+    type_params:
+      measure: count_days
+
+  - name: boston_bikes_counted
+    label: Boston bikes counted
+    description: Total bikes counted. Totals depend on how many locations and days were counted, so prefer the per-day average for comparisons.
+    type: simple
+    type_params:
+      measure: count_bikes
+    config:
+      meta:
+        caveats:
+          - Totals change with the number of locations and days counted. Use boston_avg_bikes_per_day to compare.
+
+  - name: boston_traffic_counted
+    label: Boston traffic counted
+    description: Bikes plus motor vehicles counted.
+    type: simple
+    type_params:
+      measure: count_traffic
+
+  - name: boston_bike_share
+    label: Boston bike share of traffic
+    description: Bikes as a fraction of all counted traffic (bikes plus motor vehicles).
+    type: ratio
+    type_params:
+      numerator: boston_bikes_counted
+      denominator: boston_traffic_counted
+    config:
+      meta:
+        caveats:
+          - Counts cover a few days per location, a few times a year.
+
+  # Boston crashes
+  - name: boston_crashes
+    label: Boston crashes
+    description: Crashes with an EMS dispatch, all modes.
+    type: simple
+    type_params:
+      measure: boston_crash_count
+    config:
+      meta:
+        caveats:
+          - Based on EMS dispatches, so crashes with no ambulance call are missing.
+          - Not directly comparable with NYC crash counts, which come from police reports.
+
+  - name: boston_bike_crashes
+    label: Boston bike crashes
+    description: Crashes with an EMS dispatch that involved a person on a bike.
+    type: simple
+    type_params:
+      measure: boston_crash_count
+    filter: "{{ Dimension('boston_crash__mode') }} = 'bike'"
+    config:
+      meta:
+        caveats:
+          - Based on EMS dispatches, so crashes with no ambulance call are missing.
+          - Not directly comparable with NYC crash counts, which come from police reports.
+
+  # Bluebikes
+  - name: bluebikes_trips
+    label: Bluebikes trips
+    description: Bluebikes trips started, last 12 months only.
+    type: simple
+    type_params:
+      measure: trip_count
+    config:
+      meta:
+        caveats:
+          - Only the latest 12 months of trips are loaded. The earliest month is partial (trips that started on its last day).
+
+  - name: bluebikes_ebike_trips
+    label: Bluebikes e-bike trips
+    description: Bluebikes trips on electric bikes.
+    type: simple
+    type_params:
+      measure: trip_count
+    filter: "{{ Dimension('trip_day__rideable_type') }} = 'electric_bike'"
+
+  - name: bluebikes_ebike_share
+    label: Bluebikes e-bike share
+    description: Fraction of Bluebikes trips taken on electric bikes.
+    type: ratio
+    type_params:
+      numerator: bluebikes_ebike_trips
+      denominator: bluebikes_trips
+    config:
+      meta:
+        caveats:
+          - Depends on how many e-bikes were in service, not only on rider choice.
+
+  - name: bluebikes_trip_minutes
+    label: Bluebikes trip minutes
+    type: simple
+    type_params:
+      measure: trip_minutes
+
+  - name: bluebikes_trips_with_duration
+    label: Bluebikes trips with a duration
+    type: simple
+    type_params:
+      measure: trips_with_duration
+
+  - name: bluebikes_avg_trip_minutes
+    label: Bluebikes average trip length (minutes)
+    description: Average trip duration in minutes.
+    type: ratio
+    type_params:
+      numerator: bluebikes_trip_minutes
+      denominator: bluebikes_trips_with_duration
+    config:
+      meta:
+        caveats:
+          - Trips across the November clock change have no usable duration and are left out.
+
+  # NYC crashes
+  - name: nyc_crashes
+    label: NYC crashes
+    description: Crashes reported by NYPD, all modes.
+    type: simple
+    type_params:
+      measure: nyc_crash_count
+    config:
+      meta:
+        caveats:
+          - Police-reported crashes only. Not directly comparable with Boston's EMS-based counts.
+          - The current year is partial.
+          - About 29% of crashes have no borough, so borough breakdowns leave many crashes out.
+
+  - name: nyc_cyclist_injury_crashes
+    label: NYC crashes that hurt a cyclist
+    description: NYPD-reported crashes in which at least one cyclist was injured or killed.
+    type: simple
+    type_params:
+      measure: nyc_cyclist_injury_crash_count
+    config:
+      meta:
+        caveats:
+          - The current year is partial.
+          - Counts don't account for how many people ride, which has grown.
+          - About 29% of crashes have no borough, so borough breakdowns leave many crashes out.
+
+  - name: nyc_cyclists_injured
+    label: NYC cyclists injured
+    type: simple
+    type_params:
+      measure: nyc_cyclists_injured_sum
+    config:
+      meta:
+        caveats:
+          - The current year is partial.
+
+  - name: nyc_cyclists_killed
+    label: NYC cyclists killed
+    type: simple
+    type_params:
+      measure: nyc_cyclists_killed_sum
+    config:
+      meta:
+        caveats:
+          - The current year is partial.
+
+  - name: nyc_pedestrians_killed
+    label: NYC pedestrians killed
+    type: simple
+    type_params:
+      measure: nyc_pedestrians_killed_sum
+
+  # NYC protected lanes, before and after
+  - name: new_lane_segments
+    label: New protected lane segments
+    description: Street segments that got their first protected bike lane, 2015 to Oct 2024.
+    type: simple
+    type_params:
+      measure: lane_segment_count
+
+  - name: new_lane_cyclists_hurt_before
+    label: Cyclists hurt near new lanes, 2 years before
+    type: simple
+    type_params:
+      measure: hurt_before
+
+  - name: new_lane_cyclists_hurt_after
+    label: Cyclists hurt near new lanes, 2 years after
+    type: simple
+    type_params:
+      measure: hurt_after
+
+  - name: citywide_cyclists_hurt_before
+    label: Citywide cyclists hurt, same windows before
+    type: simple
+    type_params:
+      measure: citywide_hurt_before
+
+  - name: citywide_cyclists_hurt_after
+    label: Citywide cyclists hurt, same windows after
+    type: simple
+    type_params:
+      measure: citywide_hurt_after
+
+  - name: new_lane_injury_change
+    label: Change in cyclists hurt near new lanes
+    description: (after - before) / before, for cyclists hurt within about 50 m of new protected lanes.
+    type: derived
+    type_params:
+      expr: cast(after - before as double) / nullif(before, 0)
+      metrics:
+        - name: new_lane_cyclists_hurt_after
+          alias: after
+        - name: new_lane_cyclists_hurt_before
+          alias: before
+    config:
+      meta:
+        caveats:
+          - Always compare with citywide_injury_change over the same windows; citywide injuries changed too.
+          - Lanes go where riding is growing. More riders after a lane opens means more exposure, and there is no ridership count per street to adjust for it.
+          - A crash near several adjacent segments counts once per segment.
+          - Windows after 2020 installs include the pandemic, when riding patterns changed.
+          - Small groups give extreme percentages (Staten Island has few injuries before). Report new_lane_cyclists_hurt_before next to the change.
+
+  - name: citywide_injury_change
+    label: Citywide change in cyclists hurt, same windows
+    description: (after - before) / before for all NYC cyclist injuries, over the same two-year windows as each new lane.
+    type: derived
+    type_params:
+      expr: cast(after - before as double) / nullif(before, 0)
+      metrics:
+        - name: citywide_cyclists_hurt_after
+          alias: after
+        - name: citywide_cyclists_hurt_before
+          alias: before
+
+  - name: new_lane_change_vs_citywide
+    label: New lane change minus citywide change
+    description: >
+      new_lane_injury_change minus citywide_injury_change. Below zero means injuries near new
+      lanes grew less (or fell more) than citywide over the same windows.
+    type: derived
+    type_params:
+      expr: lane - citywide
+      metrics:
+        - name: new_lane_injury_change
+          alias: lane
+        - name: citywide_injury_change
+          alias: citywide
+    config:
+      meta:
+        caveats:
+          - Accounts for citywide trends, not for more people riding on a street once it has a lane.
+          - A crash near several adjacent segments counts once per segment.

@@ -1,0 +1,13 @@
+bikelake:
+  target: local
+  outputs:
+    local:
+      type: trino
+      method: none
+      user: dbt
+      host: "{{ env_var('TRINO_HOST', 'localhost') }}"
+      port: 8080
+      http_scheme: http
+      database: iceberg
+      schema: marts
+      threads: 4

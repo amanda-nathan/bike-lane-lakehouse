@@ -1,0 +1,347 @@
+version: 2
+
+models:
+  - name: dim_boston_count_locations
+    description: Boston bike count locations, one row per location, with the span of dates it was counted.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: location_id
+        data_type: integer
+        description: BTD count location ID.
+        data_tests: [unique, not_null]
+      - name: location_name
+        data_type: varchar
+        description: Street and cross street, e.g. "Washington Street north of Bexley Road".
+      - name: latitude
+        data_type: double
+      - name: longitude
+        data_type: double
+      - name: first_count_date
+        data_type: date
+      - name: last_count_date
+        data_type: date
+      - name: count_days
+        data_type: integer
+        description: Number of days this location has been counted. Usually two per season.
+
+  - name: fct_boston_bike_counts_daily
+    description: >
+      Boston automated bike counts, one row per location per count day. Each location is counted
+      for about two days at a time, a few times a year, so compare the same season across years.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: count_day_id
+        data_type: varchar
+        description: location_id and count_date.
+        data_tests: [unique, not_null]
+      - name: location_id
+        data_type: integer
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_boston_count_locations')
+                field: location_id
+      - name: location_name
+        data_type: varchar
+      - name: count_date
+        data_type: date
+        data_tests: [not_null]
+      - name: count_year
+        data_type: integer
+      - name: season
+        data_type: varchar
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [Winter, Spring, Summer, Fall]
+      - name: weather
+        data_type: varchar
+        description: The day's weather as recorded by BTD, e.g. "High 75°, Low 57°, Cloudy".
+      - name: bikes
+        data_type: integer
+        description: Bikes counted over 24 hours, both directions.
+        data_tests: [not_null]
+      - name: vehicles
+        data_type: integer
+        description: Motor vehicles counted over 24 hours, both directions.
+      - name: am_peak_bikes
+        data_type: integer
+        description: Bikes in the morning commute window.
+      - name: pm_peak_bikes
+        data_type: integer
+        description: Bikes in the evening commute window.
+      - name: bike_share
+        data_type: double
+        description: bikes / (bikes + vehicles), as a fraction.
+
+  - name: fct_boston_bike_counts_hourly
+    description: Boston bike counts by location, hour, and direction, with vehicle classes. Hours are local time.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: count_hour_id
+        data_type: varchar
+        data_tests: [unique, not_null]
+      - name: location_id
+        data_type: integer
+      - name: location_name
+        data_type: varchar
+      - name: count_hour
+        data_type: timestamp(6)
+        description: Start of the hour, Boston local time. The source stores UTC.
+      - name: count_date
+        data_type: date
+      - name: hour_of_day
+        data_type: bigint
+        description: 0-23, local time.
+      - name: season
+        data_type: varchar
+      - name: direction
+        data_type: varchar
+      - name: bikes
+        data_type: integer
+      - name: cars
+        data_type: integer
+        description: Cars and light goods vehicles.
+      - name: buses
+        data_type: integer
+      - name: trucks
+        data_type: integer
+        description: Single-unit and multi-unit trucks.
+      - name: motorcycles
+        data_type: integer
+      - name: vehicles
+        data_type: integer
+        description: All motor vehicles.
+
+  - name: fct_boston_crashes
+    description: >
+      Boston crashes from Vision Zero, one row per EMS dispatch. Based on EMS calls, so crashes
+      with no ambulance call are missing. Not comparable one-to-one with NYC's police reports.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: crash_id
+        data_type: varchar
+        description: Built from the dispatch fields; the source has no ID.
+        data_tests: [unique, not_null]
+      - name: dispatched_at
+        data_type: timestamp(6)
+        description: EMS dispatch time, Boston local time.
+      - name: crash_date
+        data_type: date
+        data_tests: [not_null]
+      - name: mode
+        data_type: varchar
+        description: Who was involved.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [bike, pedestrian, motor_vehicle]
+      - name: location_type
+        data_type: varchar
+      - name: street
+        data_type: varchar
+      - name: cross_street
+        data_type: varchar
+      - name: latitude
+        data_type: double
+      - name: longitude
+        data_type: double
+
+  - name: dim_bluebikes_stations
+    description: Bluebikes stations that started at least one trip in the last 12 months.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: station_id
+        data_type: varchar
+        description: Matches short_name in the live GBFS feed.
+        data_tests: [unique, not_null]
+      - name: station_name
+        data_type: varchar
+        description: Most recent name.
+      - name: latitude
+        data_type: double
+      - name: longitude
+        data_type: double
+      - name: first_trip_on
+        data_type: date
+      - name: last_trip_on
+        data_type: date
+      - name: trips_started
+        data_type: bigint
+
+  - name: fct_bluebikes_trips_daily
+    description: Bluebikes trips per day, start station, member type, and bike type. Trip times are local.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: trip_day_id
+        data_type: varchar
+        data_tests: [unique, not_null]
+      - name: trip_date
+        data_type: date
+        data_tests: [not_null]
+      - name: start_station_id
+        data_type: varchar
+        description: Null for e-bike trips that started away from a station.
+      - name: start_station_name
+        data_type: varchar
+      - name: member_type
+        data_type: varchar
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [member, casual]
+      - name: rideable_type
+        data_type: varchar
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [classic_bike, electric_bike]
+      - name: trips
+        data_type: bigint
+      - name: trips_with_duration
+        data_type: bigint
+        description: Trips with a usable duration. Excludes trips across the November clock change.
+      - name: total_duration_minutes
+        data_type: double
+
+  - name: fct_nyc_crashes
+    description: NYC crashes from NYPD reports, one row per collision. Partitioned by year of crash_date. About 11% have no location and 29% no borough.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: collision_id
+        data_type: varchar
+        data_tests: [unique, not_null]
+      - name: crash_date
+        data_type: date
+        data_tests: [not_null]
+      - name: crashed_at
+        data_type: timestamp(6)
+      - name: crash_year
+        data_type: bigint
+      - name: borough
+        data_type: varchar
+        description: Null when NYPD didn't record one.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [Manhattan, Bronx, Brooklyn, Queens, Staten Island]
+      - name: zip_code
+        data_type: varchar
+      - name: latitude
+        data_type: double
+      - name: longitude
+        data_type: double
+      - name: on_street
+        data_type: varchar
+      - name: cross_street
+        data_type: varchar
+      - name: persons_injured
+        data_type: integer
+      - name: persons_killed
+        data_type: integer
+      - name: pedestrians_injured
+        data_type: integer
+      - name: pedestrians_killed
+        data_type: integer
+      - name: cyclists_injured
+        data_type: integer
+      - name: cyclists_killed
+        data_type: integer
+      - name: cyclists_hurt
+        data_type: integer
+        description: cyclists_injured + cyclists_killed.
+      - name: motorists_injured
+        data_type: integer
+      - name: motorists_killed
+        data_type: integer
+      - name: contributing_factor
+        data_type: varchar
+        description: First contributing factor listed for vehicle 1.
+      - name: vehicle_type
+        data_type: varchar
+
+  - name: dim_nyc_protected_lanes
+    description: NYC street segments that have ever had a protected bike lane, with the date the first one went in.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: segment_id
+        data_type: varchar
+        data_tests: [unique, not_null]
+      - name: street
+        data_type: varchar
+      - name: from_street
+        data_type: varchar
+      - name: to_street
+        data_type: varchar
+      - name: borough
+        data_type: varchar
+      - name: installed_on
+        data_type: date
+      - name: install_year
+        data_type: bigint
+      - name: is_current
+        data_type: boolean
+        description: True if the segment still has a current bike facility record.
+      - name: geometry_wkt
+        data_type: varchar
+        description: Segment line as WKT, longitude/latitude.
+
+  - name: fct_nyc_new_lane_safety
+    description: >
+      Protected lane segments installed 2015 through October 2024, with cyclist-injury crashes
+      within about 50 m in the two years before and after, and citywide cyclist injuries over the
+      same windows. A crash near adjacent segments counts once per segment.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: segment_id
+        data_type: varchar
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_nyc_protected_lanes')
+                field: segment_id
+      - name: street
+        data_type: varchar
+      - name: from_street
+        data_type: varchar
+      - name: to_street
+        data_type: varchar
+      - name: borough
+        data_type: varchar
+      - name: installed_on
+        data_type: date
+      - name: install_year
+        data_type: bigint
+      - name: cyclist_crashes_before
+        data_type: bigint
+      - name: cyclist_crashes_after
+        data_type: bigint
+      - name: cyclists_hurt_before
+        data_type: bigint
+      - name: cyclists_hurt_after
+        data_type: bigint
+      - name: citywide_cyclists_hurt_before
+        data_type: bigint
+      - name: citywide_cyclists_hurt_after
+        data_type: bigint
+
+  - name: metricflow_time_spine
+    description: One row per day, 2010 through 2030.
+    time_spine:
+      standard_granularity_column: date_day
+    columns:
+      - name: date_day
+        granularity: day

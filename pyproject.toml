@@ -5,19 +5,26 @@ description = "Bike lanes, bikes, cars and crashes in Boston and NYC on an Icebe
 requires-python = ">=3.12"
 dependencies = [
     "dagster>=1.13.29",
+    "dagster-dbt>=0.29.29",
     "dagster-webserver>=1.13.29",
+    "dbt-core>=1.12.6",
+    "dbt-metricflow[dbt-trino]>=0.15.0",
+    "dbt-trino>=1.11.0",
     "duckdb>=2.0.0",
+    "mcp>=2.3.0",
     "pandas>=3.1.1",
     "psycopg[binary]>=3.2",
     "pyarrow>=18",
     "pyiceberg[pyarrow]>=0.9",
     "python-dotenv>=1.2.4",
     "requests>=2.32",
+    "sqlglot>=30.30.0",
     "trino>=0.333",
 ]
 
 [project.scripts]
 bikelake = "bikelake.cli:main"
+bikelake-mcp = "bikelake.mcp_server:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -30,6 +37,13 @@ packages = ["src/bikelake"]
 dev = [
     "ipykernel>=7.4.0",
     "pytest>=9.2.0",
+]
+docs = [
+    "matplotlib>=3.11.2",
+]
+eval = [
+    "anthropic[mcp]>=2.6.0",
+    "pyyaml>=6.0.3",
 ]
 notebook = [
     "jupyterlab>=4.6.6",

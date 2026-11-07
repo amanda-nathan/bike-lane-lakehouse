@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: stg_boston__bike_counts_daily
+    description: Typed daily counts. Dates converted from UTC to local.
+  - name: stg_boston__bike_counts_hourly
+    description: Typed hourly counts, local time. One repeated source row is dropped.
+  - name: stg_boston__crashes
+    description: Typed Vision Zero crashes, local time, with a built ID.
+  - name: stg_bluebikes__trips
+    description: Typed trips, one row per ride_id. Duration is null for trips across the November clock change.
+    columns:
+      - name: ride_id
+        data_tests: [unique, not_null]
+  - name: stg_nyc__bike_routes
+    description: >
+      Typed bike route records. A segment can have several records (Current and Retired
+      versions, or more than one route), so segment_id is not unique here.
+  - name: stg_nyc__crashes
+    description: Typed NYPD collisions. 0,0 coordinates become null.
+    columns:
+      - name: collision_id
+        data_tests: [unique, not_null]

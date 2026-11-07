@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Source files loaded as-is by bikelake. Every column is a string.
+    database: iceberg
+    schema: raw
+    tables:
+      - name: boston_bike_counts_daily
+        description: Boston Transportation Department automated bike counts, one row per location per day.
+      - name: boston_bike_counts_hourly
+        description: Same counts by hour and direction, with vehicle classes.
+      - name: boston_crashes
+        description: Boston Vision Zero crash records, based on EMS dispatches.
+      - name: bluebikes_trips
+        description: Bluebikes trip history, latest 12 months.
+      - name: nyc_bike_routes
+        description: NYC bike network segments, with install dates and facility types.
+      - name: nyc_crashes
+        description: NYPD motor vehicle collision reports.

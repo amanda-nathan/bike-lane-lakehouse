@@ -1,0 +1,22 @@
+name: bikelake
+version: "1.0.0"
+profile: bikelake
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+
+models:
+  bikelake:
+    staging:
+      +schema: staging
+      +materialized: view
+    intermediate:
+      +schema: intermediate
+      +materialized: table
+    marts:
+      +schema: marts
+      +materialized: table
+
+flags:
+  require_certificate_validation: true
