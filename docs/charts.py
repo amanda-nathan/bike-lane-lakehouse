@@ -4,6 +4,7 @@
 """
 
 import json
+from datetime import datetime
 from pathlib import Path
 
 import matplotlib
@@ -53,6 +54,14 @@ def finish(ax, title: str, subtitle: str) -> None:
     ax.tick_params(length=0)
 
 
+def save(fig, name: str, source: str) -> None:
+    """Leave room at the bottom, write the source line, and save."""
+    fig.tight_layout(rect=(0, 0.05, 1, 1))
+    fig.text(0.012, 0.015, source, fontsize=7.5, color=INK_2, ha="left", va="bottom")
+    fig.savefig(OUT / name)
+    plt.close(fig)
+
+
 def lanes_by_borough() -> None:
     rows = query("""
         SELECT coalesce(borough, 'All NYC') AS area,
@@ -61,6 +70,7 @@ def lanes_by_borough() -> None:
         FROM fct_nyc_new_lane_safety
         GROUP BY GROUPING SETS ((borough), ())
     """)
+    (through,), = query("SELECT max(crash_date) FROM fct_nyc_crashes")
     order = ["All NYC", "Manhattan", "Queens", "Bronx", "Brooklyn"]  # Staten Island: 1 injury before
     rows = sorted([r for r in rows if r[0] in order], key=lambda r: order.index(r[0]))[::-1]
     areas = [r[0] for r in rows]
@@ -84,9 +94,9 @@ def lanes_by_borough() -> None:
     ax.legend(loc="upper left", bbox_to_anchor=(0, -0.1), ncol=1, frameon=False, fontsize=9)
     finish(ax, "Cyclists hurt, 2 years after vs. 2 years before a protected lane",
            "NYC lanes installed 2015 to Oct 2024. Not adjusted for more people riding.\nStaten Island left out (1 injury before).")
-    fig.tight_layout()
-    fig.savefig(OUT / "new_lanes_by_borough.png")
-    plt.close(fig)
+    # Month only: NYC adds crashes daily, and a daily date would change the chart every day.
+    save(fig, "new_lanes_by_borough.png",
+         f"Source: NYPD crash reports and NYC DOT bike routes, via NYC Open Data. Data through {datetime.fromisoformat(through):%b %Y}.")
 
 
 def washington_street() -> None:
@@ -97,6 +107,10 @@ def washington_street() -> None:
     """)
     years = [r[0] for r in rows]
     bikes = [r[1] for r in rows]
+    (latest,), = query("""
+        SELECT max(count_date) FROM fct_boston_bike_counts_daily
+        WHERE location_name = 'Washington Street north of Bexley Road'
+    """)
 
     fig, ax = plt.subplots(figsize=(7.2, 3.2))
     ax.plot(years, bikes, color=BLUE, linewidth=2, marker="o", markersize=5,
@@ -110,18 +124,18 @@ def washington_street() -> None:
     ax.set_ylabel("Bikes per day")
     finish(ax, "Washington St north of Bexley Rd, Roslindale: summer bike counts",
            "Average of the summer count days, about 2 per year. No summer count in 2017.")
-    fig.tight_layout()
-    fig.savefig(OUT / "washington_street_summers.png")
-    plt.close(fig)
+    save(fig, "washington_street_summers.png",
+         f"Source: Boston Transportation Department bike counts, via data.boston.gov. Latest count at this location: {datetime.fromisoformat(latest):%B %Y}.")
 
 
 def eval_results() -> None:
     """Share of answers with the right number and the required point, hard questions, by model and setup."""
     files = sorted((ROOT / "evals" / "results").glob("*_questions_hard_*.json"))
-    latest = {}
+    latest, run_dates = {}, {}
     for f in files:
         data = json.loads(f.read_text())
         latest[data["model"]] = data
+        run_dates[data["model"]] = datetime.strptime(f.name[:8], "%Y%m%d")
     models = [m for m in ("claude-opus-5-5", "claude-haiku-5-5") if m in latest]
     if not models:
         return
@@ -154,9 +168,9 @@ def eval_results() -> None:
     n = len({r["id"] for r in latest[models[0]]["results"]})
     finish(ax, "Hard questions answered fully right",
            f"Right number and the required caveat. {n} questions, 3 runs each (dots).")
-    fig.tight_layout()
-    fig.savefig(OUT / "eval_hard_questions.png")
-    plt.close(fig)
+    run = max(run_dates[m] for m in models)
+    save(fig, "eval_hard_questions.png",
+         f"Source: evals/run_eval.py, questions_hard.yml. Eval run {run:%b} {run.day}, {run.year}; graded by Claude Opus 5.5.")
 
 
 if __name__ == "__main__":
