@@ -2,6 +2,8 @@
 
 Boston and New York City bike, traffic, and crash data in Apache Iceberg tables, modeled with dbt, scheduled with Dagster, and queried with Trino or by an AI client through MCP.
 
+> **Try it:** email hattawaya@gmail.com for an access key, [connect Claude Code or the free MCP Inspector](#use-the-public-server), and ask, for example, *"How have summer bike counts on Washington St in Roslindale changed since 2018?"*
+
 I live near Hyde Park Ave in Roslindale, which has no bike lane; the City is [looking at a redesign](https://www.boston.gov/departments/transportation/project/hyde-park-avenue-multimodal-corridor). New York publishes when every bike lane went in, so it's a good place to see what changes after one does.
 
 **Bottom line**
@@ -12,9 +14,23 @@ I live near Hyde Park Ave in Roslindale, which has no bike lane; the City is [lo
 
 ![Cyclists hurt near new NYC protected lanes vs. citywide](docs/img/new_lanes_by_borough.png)
 
-Cyclists hurt near new protected lanes rose 17%, against 1.7% citywide. That doesn't mean the lanes made streets worse: lanes go where riding is growing, and there's no per-street ridership count to adjust for it. Those caveats are attached to the metric, so they come back with every answer built on it.
-
 ![Summer bike counts on Washington St in Roslindale](docs/img/washington_street_summers.png)
+
+## How it works
+
+```mermaid
+flowchart LR
+  A["Public data<br/>Boston, NYC, Bluebikes"] --> B["Dagster<br/>download, load, check"]
+  B --> C["Iceberg tables<br/>queried with Trino"]
+  C --> D["dbt models<br/>tests, contracts"]
+  D --> E["Metrics<br/>with caveats"]
+  D --> F["Cloudflare R2<br/>public copy"]
+  F --> G["MCP server<br/>Cloud Run, access key"]
+  E --> G
+  G --> H["Claude"]
+```
+
+Everything runs in Docker on a laptop. For the public copy, GitHub Actions runs the same steps every morning and publishes the clean tables to Cloudflare R2, where the server on Cloud Run reads them.
 
 ## Stack
 
@@ -58,11 +74,6 @@ Then open Dagster, go to **Catalog**, select all assets, and click **Materialize
 Ports are bound to 127.0.0.1 only. To use the MCP server from Claude Code: `claude mcp add --transport http bikelake http://localhost:8000/mcp`.
 
 ## How the public data stays current
-
-```
-sources ──▶ Dagster job ──▶ Iceberg + dbt (Trino) ──▶ marts ──▶ Cloudflare R2 ──▶ Cloud Run MCP server ──▶ Claude
-            (daily on GitHub Actions, or on demand locally)
-```
 
 Every day at 6:30 am Eastern, GitHub Actions starts a temporary lakehouse on its runner, runs the same Dagster job as the local stack (download every source, load, `dbt build` with tests, publish), and shuts down. The public server reads R2 directly, so new data shows up without a redeploy. It's free: GitHub doesn't charge public repos for Actions minutes.
 
