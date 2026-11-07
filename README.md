@@ -25,7 +25,7 @@ I live near Hyde Park Ave in Roslindale, which has no bike lane; the City is [lo
 ```mermaid
 flowchart LR
   A["Public data<br/>Boston, NYC, Bluebikes"] --> B["Dagster<br/>download, load, check"]
-  B --> C["Iceberg tables<br/>queried with Trino"]
+  B --> C["Raw Iceberg tables<br/>queried with Trino"]
   C --> D["dbt models<br/>tests, contracts"]
   D --> E["Metrics<br/>with caveats"]
   D --> F["Cloudflare R2<br/>public copy"]
