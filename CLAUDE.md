@@ -56,7 +56,7 @@ cd dbt && uv run mf validate-configs                 # check the semantic layer 
 cd dbt && uv run mf query --metrics <m> --group-by <d>
 uv run bikelake-mcp                                  # MCP server over stdio
 uv run --group eval python evals/run_eval.py --dry-run
-uv run --group docs python docs/charts.py              # redraw docs/img charts from Trino and eval results
+uv run --group docs python docs/charts.py              # preview the charts locally (the daily workflow commits them)
 docker compose down                                  # stop, keep data
 docker compose down -v                               # stop and delete all data
 ```
@@ -75,6 +75,7 @@ docker compose down -v                               # stop and delete all data
 - Secrets only come from the environment. Never put a password or key in a tracked file. New secrets go in `.env.example` with `change-me`.
 - New services bind ports to 127.0.0.1. Services that run a JVM get a `mem_limit`.
 - Boston count times are UTC in the source; Bluebikes trip times are local.
+- The README charts (`docs/img`) are drawn and committed by the daily workflow. Don't commit charts drawn on a laptop: Mac and Linux render text slightly differently, so the two would keep replacing each other.
 - New design decisions get a numbered file in `docs/decisions/`.
 - Comments and docs are short and plain. Commit messages are one short line.
 
