@@ -2,7 +2,7 @@
 
 Boston and New York City bike, traffic, and crash data in Apache Iceberg tables, modeled with dbt, scheduled with Dagster, and queried with Trino or by an AI client through MCP.
 
-> **Try it:** email hattawaya@gmail.com for an access key, [connect Claude Code or the free MCP Inspector](#use-the-public-server), and ask, for example, *"How have summer bike counts on Washington St in Roslindale changed since 2018?"*
+> **Try it:** email hattawaya@gmail.com for an access key, [connect Claude Code or the free MCP Inspector](#use-the-public-server), and ask, for example, *"How have summer bike counts on Washington St in Roslindale changed since 2018?"* Or, with no key, [browse the tables on Hugging Face](#no-setup-browse-it-on-hugging-face).
 
 I live near Hyde Park Ave in Roslindale, which has no bike lane; the City is [looking at a redesign](https://www.boston.gov/departments/transportation/project/hyde-park-avenue-multimodal-corridor). New York publishes when every bike lane went in, so it's a good place to see what changes after one does.
 
@@ -144,6 +144,10 @@ Claude looked up the location, queried the summer metric, then checked the indiv
 
 The [MCP Inspector](docs/inspector/README.md) is a free tool for trying the server in your browser, with no AI and no paid plan. It doesn't answer questions in plain English the way Claude does. Instead it shows exactly what Claude is given: the four tools, the rows, the SQL the semantic layer wrote, and each metric's caveats. It's also a quick way to check the numbers behind an answer, or to watch `run_sql` refuse a `DELETE`. Steps, screenshots, and a video: [docs/inspector/README.md](docs/inspector/README.md).
 
+### No setup: browse it on Hugging Face
+
+The tables are also a free public [Hugging Face dataset](https://huggingface.co/datasets/AmandaHattaway/bike-lane-lakehouse), with a **SQL Console** that runs DuckDB in your browser, and a small [Bike Lane Explorer](https://huggingface.co/spaces/AmandaHattaway/bike-lane-explorer) page with charts and a SQL box. No access key, no AI. Bluebikes trips aren't included: their license doesn't allow republishing the data as a stand-alone dataset. How they're built: [huggingface/README.md](huggingface/README.md).
+
 How it's deployed and run: [cloudrun/README.md](cloudrun/README.md).
 
 ## Eval
@@ -173,4 +177,4 @@ Local Dagster schedules (off until turned on): NYC crashes daily, the other sour
 - Compaction and snapshot expiry for the local tables (Cloudflare does both for the public copy)
 - Trino access control and column masking
 - CI that runs the tests on pull requests
-- [`space/`](space/) is a Hugging Face Space version of the public server. It wasn't deployed: Hugging Face now requires a PRO subscription to run Docker Spaces on free hardware.
+- [`space/`](space/) is a Hugging Face Space version of the public server. It wasn't deployed: Hugging Face now requires a PRO subscription to run Docker Spaces on free hardware. The tables are on Hugging Face instead as a [dataset and a static page](huggingface/README.md).

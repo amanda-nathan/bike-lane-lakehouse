@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bike Lane Explorer</title>
+<style>
+  :root {
+    --bg: #ffffff; --surface: #f6f7f9; --ink: #111827; --ink-2: #4b5563; --muted: #6b7280;
+    --line: #e5e7eb; --accent: #2563eb; --grid: #eef0f3; --warn-bg: #fff7ed; --warn-ink: #9a3412;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --surface: #171a21; --ink: #f3f4f6; --ink-2: #c7cbd3; --muted: #9ca3af;
+      --line: #2a2f3a; --accent: #6ea0ff; --grid: #20242d; --warn-bg: #2a1d12; --warn-ink: #fdba74;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  main { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.8rem; margin: 0 0 4px; }
+  h2 { font-size: 1.2rem; margin: 0 0 4px; }
+  p { margin: 6px 0; }
+  a { color: var(--accent); }
+  .sub { color: var(--ink-2); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 20px; }
+  .caveat { background: var(--warn-bg); color: var(--warn-ink); border-radius: 8px; padding: 8px 12px; margin-top: 10px; font-size: 0.93rem; }
+  .status { color: var(--muted); font-size: 0.9rem; }
+  svg text { fill: var(--ink-2); font-size: 12px; }
+  .table-wrap { overflow-x: auto; margin-top: 10px; max-height: 420px; overflow-y: auto; }
+  table { border-collapse: collapse; font-size: 0.88rem; width: 100%; }
+  th, td { text-align: left; padding: 5px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { position: sticky; top: 0; background: var(--surface); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  textarea { width: 100%; min-height: 130px; font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  button { font: inherit; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); padding: 6px 12px; cursor: pointer; margin: 6px 6px 0 0; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  details { margin-top: 12px; }
+  .tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Bike Lane Explorer</h1>
+  <p class="sub">Boston and NYC bike counts and crashes from the
+    <a href="https://huggingface.co/datasets/AmandaHattaway/bike-lane-lakehouse">bike-lane-lakehouse dataset</a>,
+    built with Apache Iceberg and dbt (<a href="https://github.com/amanda-nathan/bike-lane-lakehouse">source</a>).
+    Everything runs in your browser with DuckDB; nothing is sent to a server. Not affiliated with the City of Boston or the City of New York.</p>
+  <p class="status" id="status">Loading DuckDB…</p>
+
+  <section class="card">
+    <h2>Washington St, Roslindale: average bikes per summer count day</h2>
+    <p class="sub">Washington Street north of Bexley Road</p>
+    <div id="wash-chart"></div>
+    <div class="caveat">Each summer is only two or three count days, so one day moves the average a lot. Compare summer with summer: since 2020 the City also counts in winter and spring, which have fewer riders.</div>
+    <details><summary>Table</summary><div class="table-wrap" id="wash-table"></div></details>
+  </section>
+
+  <section class="card">
+    <h2>NYC: cyclists injured or killed in police-reported crashes, by year</h2>
+    <div id="nyc-chart"></div>
+    <div class="caveat">The first and last years are partial: the data starts in July 2012, and the latest year runs only through <code>data_through</code>. Compare a partial year with the same months of another year. Crashes nobody reported to police are missing.</div>
+    <details><summary>Table</summary><div class="table-wrap" id="nyc-table"></div></details>
+  </section>
+
+  <section class="card">
+    <h2>Ask with SQL</h2>
+    <p class="sub">DuckDB SQL over the tables listed below, in your browser. Results show the first 1,000 rows.
+      Before adding up <code>fct_nyc_new_lane_safety</code> across segments, read its caveat on the
+      <a href="https://huggingface.co/datasets/AmandaHattaway/bike-lane-lakehouse">dataset page</a>: a crash near several segments appears once per segment.</p>
+    <textarea id="sql" spellcheck="false" aria-label="SQL query"></textarea>
+    <div id="examples"></div>
+    <button class="primary" id="run">Run</button>
+    <p class="status" id="sql-status"></p>
+    <div class="table-wrap" id="sql-result"></div>
+    <details><summary>Tables and columns</summary><div class="table-wrap" id="columns"></div></details>
+  </section>
+</main>
+<div class="tip" id="tip"></div>
+
+<script type="module">
+import * as duckdb from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm";
+
+const BASE = "https://huggingface.co/datasets/AmandaHattaway/bike-lane-lakehouse/resolve/main/data/";
+const TABLES = ["fct_boston_bike_counts_daily", "fct_boston_bike_counts_hourly", "dim_boston_count_locations",
+  "fct_boston_crashes", "fct_nyc_crashes", "dim_nyc_protected_lanes", "fct_nyc_new_lane_safety"];
+const MAX_ROWS = 1000;
+const EXAMPLES = [
+  ["Washington St by season, 2025",
+   "SELECT season, count(*) AS count_days, round(avg(bikes), 1) AS avg_bikes\nFROM fct_boston_bike_counts_daily\nWHERE location_name = 'Washington Street north of Bexley Road' AND count_year = 2025\nGROUP BY 1 ORDER BY 1"],
+  ["NYC cyclists hurt by borough, 2025",
+   "SELECT borough, sum(cyclists_hurt) AS cyclists_hurt\nFROM fct_nyc_crashes\nWHERE crash_year = 2025\nGROUP BY 1 ORDER BY 2 DESC"],
+  ["Boston crashes by mode, 2025",
+   "SELECT mode, count(*) AS crashes\nFROM fct_boston_crashes\nWHERE year(crash_date) = 2025\nGROUP BY 1 ORDER BY 2 DESC"],
+];
+
+const $ = (id) => document.getElementById(id);
+const status = (msg) => { $("status").textContent = msg; };
+
+// Arrow values to plain display values: BigInt -> Number, dates -> YYYY-MM-DD, timestamps -> YYYY-MM-DD HH:MM:SS.
+function plain(value, type) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "bigint") return Number(value);
+  const t = String(type);
+  if (t.startsWith("Date")) return new Date(Number(value)).toISOString().slice(0, 10);
+  if (t.startsWith("Timestamp")) return new Date(Number(value)).toISOString().replace("T", " ").slice(0, 19);
+  return value;
+}
+
+function rowsOf(result) {
+  const fields = result.schema.fields;
+  return {
+    columns: fields.map((f) => f.name),
+    rows: result.toArray().map((r) => fields.map((f) => plain(r[f.name], f.type))),
+  };
+}
+
+function renderTable(el, { columns, rows }) {
+  const fmt = (v) => typeof v === "number" ? v.toLocaleString(undefined, { maximumFractionDigits: 4 }) : (v ?? "");
+  el.innerHTML = "<table><thead><tr>" + columns.map((c) => `<th>${c}</th>`).join("") + "</tr></thead><tbody>" +
+    rows.map((r) => "<tr>" + r.map((v) => `<td class="${typeof v === "number" ? "num" : ""}">${String(fmt(v)).replace(/</g, "&lt;")}</td>`).join("") + "</tr>").join("") +
+    "</tbody></table>";
+}
+
+// One series, one axis: a thin line with markers, or bars with 4px rounded tops. Hover shows the value.
+function renderChart(el, labels, values, kind, yTitle) {
+  const W = 880, H = 300, L = 56, R = 16, T = 16, B = 40;
+  // Round tick steps: 1, 2, 2.5, or 5 times a power of ten.
+  const raw = Math.max(...values) / 4, pow = 10 ** Math.floor(Math.log10(raw));
+  const tickStep = [1, 2, 2.5, 5, 10].map((m) => m * pow).find((s) => s >= raw);
+  const max = Math.ceil(Math.max(...values) / tickStep) * tickStep, step = (W - L - R) / labels.length;
+  const y = (v) => T + (H - T - B) * (1 - v / max);
+  const ticks = Array.from({ length: Math.round(max / tickStep) + 1 }, (_, i) => i * tickStep);
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${yTitle} by year">`;
+  for (const t of ticks) s += `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)"/><text x="${L - 8}" y="${y(t) + 4}" text-anchor="end">${t.toLocaleString()}</text>`;
+  labels.forEach((lab, i) => { s += `<text x="${L + step * (i + 0.5)}" y="${H - B + 20}" text-anchor="middle">${lab}</text>`; });
+  if (kind === "line") {
+    s += `<polyline fill="none" stroke="var(--accent)" stroke-width="2" points="${values.map((v, i) => `${L + step * (i + 0.5)},${y(v)}`).join(" ")}"/>`;
+    values.forEach((v, i) => { s += `<circle class="pt" cx="${L + step * (i + 0.5)}" cy="${y(v)}" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2" data-tip="${labels[i]}: ${v.toLocaleString()}"/>`; });
+  } else {
+    const bw = Math.min(40, step * 0.6);
+    values.forEach((v, i) => {
+      const x = L + step * (i + 0.5) - bw / 2, top = y(v), h = H - B - top;
+      s += `<path class="pt" d="M${x},${H - B} V${top + 4} Q${x},${top} ${x + 4},${top} H${x + bw - 4} Q${x + bw},${top} ${x + bw},${top + 4} V${H - B} Z" fill="var(--accent)" data-tip="${labels[i]}: ${v.toLocaleString()}"/>`;
+    });
+  }
+  el.innerHTML = s + "</svg>";
+  el.querySelectorAll(".pt").forEach((p) => {
+    p.addEventListener("mousemove", (e) => { const t = $("tip"); t.textContent = p.dataset.tip; t.style.display = "block"; t.style.left = e.clientX + 12 + "px"; t.style.top = e.clientY - 28 + "px"; });
+    p.addEventListener("mouseleave", () => { $("tip").style.display = "none"; });
+  });
+}
+
+async function main() {
+  const bundle = await duckdb.selectBundle(duckdb.getJsDelivrBundles());
+  const workerUrl = URL.createObjectURL(new Blob([`importScripts("${bundle.mainWorker}");`], { type: "text/javascript" }));
+  const db = new duckdb.AsyncDuckDB(new duckdb.VoidLogger(), new Worker(workerUrl));
+  await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+  const conn = await db.connect();
+  status("Connecting to the dataset…");
+  for (const t of TABLES) await conn.query(`CREATE VIEW ${t} AS SELECT * FROM read_parquet('${BASE}${t}.parquet')`);
+
+  status("Loading charts…");
+  const wash = rowsOf(await conn.query(`
+    SELECT count_year, count(*) AS count_days, round(avg(bikes), 1) AS avg_bikes_per_day
+    FROM fct_boston_bike_counts_daily
+    WHERE location_name = 'Washington Street north of Bexley Road' AND season = 'Summer'
+    GROUP BY 1 ORDER BY 1`));
+  renderChart($("wash-chart"), wash.rows.map((r) => r[0]), wash.rows.map((r) => r[2]), "line", "Bikes per count day");
+  renderTable($("wash-table"), wash);
+
+  const nyc = rowsOf(await conn.query(`
+    SELECT crash_year, sum(cyclists_hurt) AS cyclists_hurt, CAST(max(crash_date) AS VARCHAR) AS data_through
+    FROM fct_nyc_crashes GROUP BY 1 ORDER BY 1`));
+  renderChart($("nyc-chart"), nyc.rows.map((r) => r[0]), nyc.rows.map((r) => r[1]), "bar", "Cyclists hurt");
+  renderTable($("nyc-table"), nyc);
+
+  renderTable($("columns"), rowsOf(await conn.query(`
+    SELECT table_name, string_agg(column_name, ', ' ORDER BY ordinal_position) AS columns
+    FROM information_schema.columns GROUP BY 1 ORDER BY 1`)));
+
+  $("sql").value = EXAMPLES[0][1];
+  for (const [label, sql] of EXAMPLES) {
+    const b = document.createElement("button"); b.textContent = label;
+    b.onclick = () => { $("sql").value = sql; };
+    $("examples").appendChild(b);
+  }
+  $("run").onclick = async () => {
+    const sql = $("sql").value.trim().replace(/;\s*$/, "");
+    $("sql-status").textContent = "Running…"; $("sql-result").innerHTML = "";
+    const started = performance.now();
+    try {
+      // Cap SELECT-style queries so a big table doesn't fill the browser's memory.
+      const capped = /^\s*(with|select|from|values|table)\b/i.test(sql) ? `SELECT * FROM (${sql}) LIMIT ${MAX_ROWS + 1}` : sql;
+      const out = rowsOf(await conn.query(capped));
+      const more = out.rows.length > MAX_ROWS;
+      out.rows = out.rows.slice(0, MAX_ROWS);
+      renderTable($("sql-result"), out);
+      const secs = ((performance.now() - started) / 1000).toFixed(1);
+      $("sql-status").textContent = (more ? `Showing the first ${MAX_ROWS.toLocaleString()} rows` : `${out.rows.length.toLocaleString()} rows`) + ` (${secs} s)`;
+    } catch (e) {
+      $("sql-status").textContent = "Error: " + e.message;
+    }
+  };
+  status("Ready. The first query on a big table downloads only the columns it needs.");
+}
+
+main().catch((e) => status("Couldn't load: " + e.message));
+</script>
+</body>
+</html>
