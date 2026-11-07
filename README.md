@@ -107,9 +107,15 @@ Needs [Node.js](https://nodejs.org).
 Recorded against a local copy of the server, so no access key is on screen. For the public server, use its URL and add the header in step 3.
 
 1. Run `npx @modelcontextprotocol/inspector`. It opens in your browser.
-2. **Add Servers > Add manually**, choose **streamable-http**, and paste the URL above.
-3. In that server's **Settings**, add a header: name `Authorization`, value `Bearer ACCESS_KEY`.
+2. **Add Servers > Add manually**, choose **streamable-http**, and paste the server URL: `https://bikelake-mcp-140130294299.us-east1.run.app/mcp`
+3. On the new server's card, click **Settings > Custom Headers > + Add Header**. Key: `Authorization`. Value: `Bearer`, a space, then the access key you were sent. Close the window; it saves by itself.
+
+   ![Custom Headers with Key Authorization and Value Bearer plus a practice key](docs/inspector/key-header.png)
+
+   If it says "Missing or wrong access key", the value is usually missing `Bearer ` in front. Step-by-step video with the fix: [docs/inspector/how-to-add-your-access-key.mp4](docs/inspector/how-to-add-your-access-key.mp4) (a practice server and key, no real key shown).
 4. Flip the server's switch. It should say **Connected**.
+
+   ![The server card showing Connected](docs/inspector/connected.png)
 5. Open **Tools** at the top, pick **run_sql**, paste a query, and click **Execute Tool**:
    ```sql
    SELECT count_year, round(avg(bikes)) AS bikes_per_day, count(*) AS count_days
