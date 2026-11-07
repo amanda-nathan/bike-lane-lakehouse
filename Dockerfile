@@ -11,6 +11,10 @@ ENV PATH="/app/.venv/bin:$PATH" \
     DAGSTER_HOME=/dagster_home
 RUN mkdir -p /dagster_home
 
+# dbt project; parse at build time so Dagster can read the manifest without a database.
+COPY dbt ./dbt
+RUN dbt parse --project-dir dbt --profiles-dir dbt --quiet
+
 CMD ["dagster", "dev", "-h", "0.0.0.0", "-p", "3000", "-m", "bikelake.defs"]
 
 

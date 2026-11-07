@@ -1,72 +1,56 @@
 # bike-lane-lakehouse
 
-Boston and New York City bike, traffic, and crash data, loaded into Apache Iceberg tables and queried with Trino:
+Boston and New York City bike, traffic, and crash data in Apache Iceberg tables, modeled with dbt, scheduled with Dagster, and queried with Trino or by an AI client through MCP.
 
-- Storage (`docker-compose.yml`): RustFS, an S3-compatible object store. Downloaded files go in the `landing` bucket as-is; Iceberg tables go in `warehouse`.
-- Catalog: the Iceberg REST catalog, which tracks the current metadata file for each table.
-- Trino (`trino/catalog/`): queries the Iceberg tables and Postgres, together if needed.
-- Loaders (`src/bikelake/`): download each source to `landing`, then load it into `iceberg.raw`.
-- Dagster (`src/bikelake/defs.py`): one asset per source, with schedules and checks.
-- Postgres: live Bluebikes station status, polled from the public GBFS feed.
-- Jupyter (`notebooks/`): querying Trino from Python.
+I live near Hyde Park Ave in Roslindale, which has no bike lane; the City is [looking at a redesign](https://www.boston.gov/departments/transportation/project/hyde-park-avenue-multimodal-corridor). New York publishes when every bike lane went in, so it's a good place to see what changes after one does.
 
-I live near Hyde Park Ave in Roslindale. It has no bike lane, and the City is [looking at a redesign](https://www.boston.gov/departments/transportation/project/hyde-park-avenue-multimodal-corridor). New York publishes the install date of every bike lane along with its crash and traffic data, so it's a good place to look at what changes after a lane goes in. Related: [boston-bike-safety](https://github.com/amanda-nathan/boston-bike-safety), a crash risk model for the same corridor.
+![Cyclists hurt near new NYC protected lanes vs. citywide](docs/img/new_lanes_by_borough.png)
 
-See [CLAUDE.md](CLAUDE.md) for conventions, layout, and commands. The reasons behind the design are in [docs/decisions/](docs/decisions/).
+Cyclists hurt near new protected lanes rose 17%, against 1.7% citywide. That doesn't mean the lanes made streets worse: lanes go where riding is growing, and there's no per-street ridership count to adjust for it. Those caveats are attached to the metric, so they come back with every answer built on it.
 
-## Setup
+![Summer bike counts on Washington St in Roslindale](docs/img/washington_street_summers.png)
 
-Only Docker is needed.
+## Stack
 
-1. Clone the repo and create `.env` from the example. Replace each `change-me`, for example with `openssl rand -hex 16`. Passwords and keys live only in `.env`, which git ignores; compose stops with a message if one is missing.
-   ```bash
-   git clone https://github.com/amanda-nathan/bike-lane-lakehouse
-   cd bike-lane-lakehouse
-   cp .env.example .env
-   ```
-2. Start the stack: `docker compose up -d --build`.
-3. Load the data. Open Dagster at http://localhost:3000, go to **Catalog**, select all assets, and click **Materialize**. This downloads every source into `landing` and loads it into `iceberg.raw`. It takes about 10 minutes, mostly the NYC crash file.
-
-Every port is bound to 127.0.0.1, so nothing is reachable from other machines on the network. Jupyter has no login for the same reason.
-
-| Service | Address |
-|---|---|
-| Dagster: runs, schedules, checks | http://localhost:3000 |
-| Jupyter: query notebooks | http://localhost:8888 |
-| Trino: query monitor | http://localhost:8080 (any username) |
-| Storage console | http://localhost:9001/rustfs/console/ (`S3_ACCESS_KEY` / `S3_SECRET_KEY` from `.env`) |
-
-## Schedules
-
-| Asset | Schedule (Eastern) | What runs |
+| Piece | Where | What it does |
 |---|---|---|
-| `nyc_crashes` | Daily, 6:00 | Download the full file, overwrite the table |
-| `boston_bike_counts_daily`, `boston_bike_counts_hourly`, `boston_crashes`, `nyc_bike_routes` | Mondays, 6:00 | Download the full file, overwrite the table |
-| `bluebikes_trips` | 3rd of the month, 6:00 | Download new monthly files only, reload the table from the latest 12 months |
-| `station_status` | Hourly | Append one snapshot of every station to Postgres |
+| RustFS | `docker-compose.yml` | S3-compatible storage. `landing` holds files as downloaded; `warehouse` holds Iceberg tables |
+| Iceberg REST catalog | `catalog/` | Tracks each table's current metadata. Keeps its pointers in Postgres |
+| Trino | `trino/catalog/` | Queries Iceberg and Postgres |
+| Loaders | `src/bikelake/` | Download each source, load it into `iceberg.raw` |
+| dbt | `dbt/` | Staging, intermediate, and mart models; tests; contracts; metrics with caveats |
+| Dagster | `src/bikelake/defs.py` | Loads, dbt models, schedules, and checks in one asset graph |
+| MCP server | `src/bikelake/mcp_server.py` | Metrics and read-only SQL for AI clients |
+| Eval | `evals/` | Accuracy of semantic-layer queries vs. plain text-to-SQL |
 
-**Schedules are off by default.** Turn them on in Dagster under **Automation**.
+Conventions and commands: [CLAUDE.md](CLAUDE.md). Why it's built this way: [docs/decisions/](docs/decisions/).
 
-**Every load replaces the table.** Each overwrite is a new Iceberg snapshot, so earlier loads stay queryable with time travel until snapshots are expired. Expiry isn't scheduled yet.
+## Run it
 
-**Schema changes don't fail a load.** A column the source adds is added to the table. A column the source drops stays in the table and is left null. The `schema_unchanged` check warns when the source adds a column, and `row_count_not_dropped` fails if a load has 5% fewer rows than the one before.
+Needs Docker.
 
-**Raw columns are all strings.** Types are applied in the next layer (dbt, not built yet). See [0002](docs/decisions/0002-raw-layer-is-strings.md).
+```bash
+git clone https://github.com/amanda-nathan/bike-lane-lakehouse
+cd bike-lane-lakehouse
+cp .env.example .env          # replace each change-me, e.g. with: openssl rand -hex 16
+docker compose up -d --build
+```
 
-**Time zones differ by source.** Boston hourly counts are stored in UTC. Bluebikes trip times are local.
+Then open Dagster, go to **Catalog**, select all assets, and click **Materialize**. It takes about 10 minutes, mostly the NYC crash file.
 
-**Boston counts are sparse.** Each site is counted for about two days, a few times a year. Compare the same season across years.
-
-## Querying
-
-| How | Command or file |
+| | |
 |---|---|
-| SQL shell | `docker compose exec trino trino` |
-| Run a SQL file | `docker compose exec -T trino trino < sql/02_live_and_history.sql` |
-| Notebook | [notebooks/query_examples.ipynb](notebooks/query_examples.ipynb), in Jupyter or VS Code |
-| Without Trino | [examples/read_without_trino.py](examples/read_without_trino.py): PyIceberg and DuckDB on the same table |
+| Dagster | http://localhost:3000 |
+| MCP server | http://localhost:8000/mcp |
+| Jupyter | http://localhost:8888 |
+| Trino | http://localhost:8080, or `docker compose exec trino trino` |
+| Storage console | http://localhost:9001/rustfs/console/ |
 
-[sql/01_first_queries.sql](sql/01_first_queries.sql) covers trends, Iceberg snapshots and files, time travel, and partitioning. [sql/02_live_and_history.sql](sql/02_live_and_history.sql) joins live station status in Postgres to a year of trips in Iceberg, in one query.
+Ports are bound to 127.0.0.1 only. To use the MCP server from Claude Code: `claude mcp add --transport http bikelake http://localhost:8000/mcp`.
+
+## Eval
+
+Claude answered questions through the MCP server with SQL tools only, and with the metrics preferred. On hard questions, Opus 5.5 got every answer right either way. Haiku 5.5 got 26 of 30 with SQL only and 29 of 30 with the metrics, mostly because the metric's caveats came along. Two answers I first marked wrong turned out to be better than my answer key. Details and cost: [evals/RESULTS.md](evals/RESULTS.md).
 
 ## Data
 
@@ -79,21 +63,15 @@ Every port is bound to 127.0.0.1, so nothing is reachable from other machines on
 | `raw.nyc_bike_routes` | [NYC DOT](https://data.cityofnewyork.us/d/mzxg-pwib) | ~30K |
 | `raw.nyc_crashes` | [NYPD](https://data.cityofnewyork.us/d/h9gi-nx95) | ~2.3M |
 
-Sources are defined in `src/bikelake/sources.py`. No data is committed.
+Quirks the staging models handle: Boston count times are UTC, Bluebikes times are local; trips across the November clock change end before they start; a few rows are duplicated at the source; NYC route records are versioned. About 29% of NYC crashes have no borough.
 
-## Development
-
-With [uv](https://docs.astral.sh/uv/) installed, `uv sync` sets up a local environment that reads `.env`. `uv run bikelake run` loads every source from the command line, and `uv run pytest` runs the tests, which need the stack running.
+Schedules: NYC crashes daily, the other sources weekly, Bluebikes monthly, station status hourly. Each schedule rebuilds only the models downstream of its source. They're off until turned on in Dagster.
 
 ## Not built yet
 
-- dbt-trino models: staging, intermediate, marts, with tests
-- Larger tables: NYC traffic speeds and Citi Bike trips, partitioned
-- Dagster jobs for compaction and snapshot expiry
-- Incremental loads for NYC crashes
-- Semantic layer with metrics shared across both cities
-- MCP server, with an eval comparing semantic layer queries to plain text-to-SQL
+- A mart with one row per crash near a new lane, to fix a double count the eval found
+- Larger tables: NYC traffic speeds and Citi Bike trips
+- Compaction and snapshot expiry jobs; incremental loads for NYC crashes
 - Trino access control and column masking
 - CI
-- Free public version: Cloudflare R2 and R2 Data Catalog, Trino and MCP on a Hugging Face Space, loads on GitHub Actions
-- Kubernetes: Helm install of Trino and Dagster, tested in CI with kind
+- Public version: data on Cloudflare R2, Trino and the MCP server on a Hugging Face Space, loads on GitHub Actions

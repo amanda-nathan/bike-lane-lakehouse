@@ -1,7 +1,13 @@
-"""Dagster definitions: one asset per source, live station snapshots, schedules, checks."""
+"""Dagster definitions: raw loads, dbt models, live station snapshots, schedules, checks."""
+
+from collections.abc import Mapping
+from pathlib import Path
+from typing import Any
 
 from dagster import (
     AssetCheckResult,
+    AssetExecutionContext,
+    AssetKey,
     AssetCheckSeverity,
     AssetSelection,
     Definitions,
@@ -11,6 +17,7 @@ from dagster import (
     asset,
     asset_check,
 )
+from dagster_dbt import DagsterDbtTranslator, DbtCliResource, DbtProject, dbt_assets
 from pyiceberg.table.snapshots import Operation
 
 from bikelake import stations
@@ -18,7 +25,12 @@ from bikelake.extract import extract
 from bikelake.load import catalog, load
 from bikelake.sources import SOURCES, Source
 
+DBT_DIR = Path(__file__).resolve().parents[2] / "dbt"
+dbt_project = DbtProject(project_dir=DBT_DIR, profiles_dir=DBT_DIR)
+dbt_project.prepare_if_dev()
+
 # Matched to how often each source publishes. Times are Eastern.
+# Each schedule loads the raw table, then rebuilds every dbt model downstream of it.
 SCHEDULES = {
     "nyc_crashes": "0 6 * * *",  # daily
     "boston_crashes": "0 6 * * 1",  # weekly; source updates monthly
@@ -32,6 +44,7 @@ SCHEDULES = {
 def raw_asset(source: Source):
     @asset(
         name=source.name,
+        key_prefix="raw",
         group_name="raw",
         kinds={"python", "iceberg"},
         description=source.description,
@@ -54,7 +67,7 @@ def raw_asset(source: Source):
 
 def row_count_check(source: Source):
     @asset_check(
-        asset=source.name,
+        asset=AssetKey(["raw", source.name]),
         name="row_count_not_dropped",
         description="Fails if this load has 5% fewer rows than the previous load.",
     )
@@ -73,7 +86,7 @@ def row_count_check(source: Source):
 
 def schema_check(source: Source):
     @asset_check(
-        asset=source.name,
+        asset=AssetKey(["raw", source.name]),
         name="schema_unchanged",
         description="Warns when the source added or dropped columns since the last load.",
     )
@@ -95,6 +108,23 @@ def schema_check(source: Source):
     return _check
 
 
+class Translator(DagsterDbtTranslator):
+    """dbt sources map to the raw assets (raw/<table>); models are keyed and grouped by schema."""
+
+    def get_asset_key(self, dbt_resource_props: Mapping[str, Any]) -> AssetKey:
+        if dbt_resource_props["resource_type"] == "source":
+            return super().get_asset_key(dbt_resource_props)
+        return AssetKey([dbt_resource_props["config"]["schema"], dbt_resource_props["name"]])
+
+    def get_group_name(self, dbt_resource_props: Mapping[str, Any]) -> str | None:
+        return dbt_resource_props["config"].get("schema")
+
+
+@dbt_assets(manifest=dbt_project.manifest_path, dagster_dbt_translator=Translator())
+def dbt_models(context: AssetExecutionContext, dbt: DbtCliResource):
+    yield from dbt.cli(["build"], context=context).stream()
+
+
 @asset(
     group_name="live",
     kinds={"python", "postgres"},
@@ -107,7 +137,7 @@ def station_status() -> MaterializeResult:
 schedules = [
     ScheduleDefinition(
         name=f"{name}_schedule",
-        target=AssetSelection.assets(name),
+        target=AssetSelection.assets(AssetKey(["raw", name])).downstream(),
         cron_schedule=cron,
         execution_timezone="America/New_York",
     )
@@ -123,7 +153,8 @@ schedules.append(
 )
 
 defs = Definitions(
-    assets=[raw_asset(s) for s in SOURCES.values()] + [station_status],
+    assets=[raw_asset(s) for s in SOURCES.values()] + [dbt_models, station_status],
     asset_checks=[row_count_check(s) for s in SOURCES.values()] + [schema_check(s) for s in SOURCES.values()],
     schedules=schedules,
+    resources={"dbt": DbtCliResource(project_dir=dbt_project)},
 )

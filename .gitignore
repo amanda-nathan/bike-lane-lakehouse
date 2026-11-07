@@ -23,3 +23,6 @@ logs/
 .tmp_dagster_home*/
 
 .DS_Store
+
+# editor
+.vscode/

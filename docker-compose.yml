@@ -4,11 +4,13 @@
 # postgres: 5432 (live Bluebikes station status)
 # dagster: 3000 (schedules and runs the loads)
 # jupyter: 8888 (notebooks)
+# mcp: 8000 (MCP server, streamable HTTP at /mcp)
 #
 # Secrets come from .env (copy .env.example).
 
 services:
   rustfs:
+    restart: unless-stopped
     image: rustfs/rustfs:1.0.4
     environment:
       RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:?set in .env, see .env.example}
@@ -40,10 +42,13 @@ services:
       "
 
   iceberg-rest:
-    image: apache/iceberg-rest-fixture:1.9.1
+    restart: unless-stopped
+    build: ./catalog
     depends_on:
       s3-init:
         condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
     environment:
       AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:?set in .env, see .env.example}
       AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:?set in .env, see .env.example}
@@ -52,15 +57,14 @@ services:
       CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
       CATALOG_S3_ENDPOINT: http://rustfs:9000
       CATALOG_S3_PATH__STYLE__ACCESS: "true"
-      # default is in-memory; keep the catalog across restarts
-      CATALOG_URI: jdbc:sqlite:file:/catalog/iceberg_catalog.db
-    user: root
+      CATALOG_URI: jdbc:postgresql://postgres:5432/iceberg_catalog
+      CATALOG_JDBC_USER: ${POSTGRES_USER:?set in .env, see .env.example}
+      CATALOG_JDBC_PASSWORD: ${POSTGRES_PASSWORD:?set in .env, see .env.example}
     ports:
       - "127.0.0.1:8181:8181"
-    volumes:
-      - catalog-data:/catalog
 
   postgres:
+    restart: unless-stopped
     image: postgres:17.5
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?set in .env, see .env.example}
@@ -70,9 +74,18 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - pg-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 2s
+      retries: 30
 
   trino:
+    restart: unless-stopped
     image: trinodb/trino:476
+    # Trino sizes its heap to 80% of the memory it sees. Without a limit it sees all of
+    # Docker's memory and gets killed when other services need some.
+    mem_limit: 5g
     depends_on:
       - iceberg-rest
       - postgres
@@ -88,6 +101,7 @@ services:
       - ./trino/catalog:/etc/trino/catalog:ro
 
   dagster:
+    restart: unless-stopped
     build:
       context: .
       target: app
@@ -98,6 +112,7 @@ services:
       S3_ENDPOINT: http://rustfs:9000
       ICEBERG_REST_URI: http://iceberg-rest:8181
       POSTGRES_HOST: postgres
+      TRINO_HOST: trino
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:?set in .env, see .env.example}
       S3_SECRET_KEY: ${S3_SECRET_KEY:?set in .env, see .env.example}
       POSTGRES_USER: ${POSTGRES_USER:?set in .env, see .env.example}
@@ -108,7 +123,21 @@ services:
     volumes:
       - dagster-home:/dagster_home
 
+  mcp:
+    restart: unless-stopped
+    build:
+      context: .
+      target: app
+    command: ["bikelake-mcp", "--http", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      - trino
+    environment:
+      TRINO_HOST: trino
+    ports:
+      - "127.0.0.1:8000:8000"
+
   jupyter:
+    restart: unless-stopped
     build:
       context: .
       target: notebook
@@ -128,6 +157,5 @@ services:
 
 volumes:
   s3-data:
-  catalog-data:
   pg-data:
   dagster-home:
