@@ -1,0 +1,124 @@
+# Each question has one numeric answer, computed at eval time from reference_sql against
+# iceberg.marts, so the expected values follow the data as it refreshes.
+#
+# tolerance: relative (0.01 = within 1%) unless abs_tolerance is given.
+# caveat_keywords: a good answer mentions at least one of these (case-insensitive).
+
+- id: nyc_cyclist_crashes_2025
+  question: How many crashes in New York City hurt at least one cyclist in 2025?
+  reference_sql: SELECT count(*) FROM fct_nyc_crashes WHERE crash_year = 2025 AND cyclists_hurt > 0
+
+- id: nyc_cyclists_killed_2024
+  question: How many cyclists were killed in NYC crashes in 2024?
+  reference_sql: SELECT sum(cyclists_killed) FROM fct_nyc_crashes WHERE crash_year = 2024
+
+- id: nyc_cyclists_injured_2026
+  question: How many cyclists have been injured in NYC crashes in 2026?
+  reference_sql: SELECT sum(cyclists_injured) FROM fct_nyc_crashes WHERE crash_year = 2026
+  caveat_keywords: [partial, so far, year to date, year-to-date, through, not complete, incomplete, not over]
+
+- id: nyc_top_borough_cyclist_crashes_2025
+  question: Which NYC borough had the most crashes that hurt a cyclist in 2025, and how many were there?
+  reference_sql: >
+    SELECT max(n) FROM (SELECT borough, count(*) AS n FROM fct_nyc_crashes
+    WHERE crash_year = 2025 AND cyclists_hurt > 0 AND borough IS NOT NULL GROUP BY borough)
+  caveat_keywords: [no borough, missing borough, without a borough, borough is missing, not recorded, unknown borough, null]
+
+- id: nyc_pedestrians_killed_2023
+  question: How many pedestrians were killed in NYC crashes in 2023?
+  reference_sql: SELECT sum(pedestrians_killed) FROM fct_nyc_crashes WHERE crash_year = 2023
+
+- id: nyc_no_borough_2025
+  question: How many NYC crashes in 2025 have no borough recorded?
+  reference_sql: SELECT count(*) FROM fct_nyc_crashes WHERE crash_year = 2025 AND borough IS NULL
+
+- id: washington_st_summer_2025
+  question: On average, how many bikes per day were counted on Washington Street north of Bexley Road in Roslindale in summer 2025?
+  reference_sql: >
+    SELECT avg(bikes) FROM fct_boston_bike_counts_daily
+    WHERE location_name = 'Washington Street north of Bexley Road' AND season = 'Summer' AND count_year = 2025
+  caveat_keywords: [two days, 2 days, two count days, 2 count days, sample, only counted]
+
+- id: boston_avg_bikes_summer_2024
+  question: Across all Boston bike count locations, what was the average number of bikes per count day in summer 2024?
+  reference_sql: SELECT avg(bikes) FROM fct_boston_bike_counts_daily WHERE season = 'Summer' AND count_year = 2024
+
+- id: boston_bike_share_2025
+  question: In Boston's 2025 traffic counts, what fraction of all counted traffic (bikes plus motor vehicles) was bikes?
+  reference_sql: >
+    SELECT cast(sum(bikes) AS double) / sum(bikes + vehicles)
+    FROM fct_boston_bike_counts_daily WHERE count_year = 2025
+  abs_tolerance: 0.001
+
+- id: boston_locations_2026
+  question: How many different Boston bike count locations were counted in 2026?
+  reference_sql: SELECT count(DISTINCT location_id) FROM fct_boston_bike_counts_daily WHERE count_year = 2026
+
+- id: boston_top_location_2025
+  question: Which Boston count location had the highest average bikes per count day in 2025, and what was that average?
+  reference_sql: >
+    SELECT max(a) FROM (SELECT location_id, avg(bikes) AS a FROM fct_boston_bike_counts_daily
+    WHERE count_year = 2025 GROUP BY location_id)
+
+- id: boston_peak_hour
+  question: Across all of Boston's hourly bike counts, which hour of the day (0-23, local time) has the most bikes?
+  reference_sql: >
+    SELECT hour_of_day FROM fct_boston_bike_counts_hourly
+    GROUP BY hour_of_day ORDER BY sum(bikes) DESC LIMIT 1
+  abs_tolerance: 0
+
+- id: boston_bike_crashes_2024
+  question: How many crashes involving a person on a bike did Boston's Vision Zero data record in 2024?
+  reference_sql: SELECT count(*) FROM fct_boston_crashes WHERE mode = 'bike' AND year(crash_date) = 2024
+  caveat_keywords: [EMS, ambulance, dispatch]
+
+- id: bluebikes_trips_sep_2026
+  question: How many Bluebikes trips were taken in September 2026?
+  reference_sql: SELECT sum(trips) FROM fct_bluebikes_trips_daily WHERE trip_date BETWEEN DATE '2026-09-01' AND DATE '2026-09-30'
+
+- id: bluebikes_ebike_share_oct_2026
+  question: What fraction of Bluebikes trips in October 2026 were on electric bikes?
+  reference_sql: >
+    SELECT cast(sum(CASE WHEN rideable_type = 'electric_bike' THEN trips ELSE 0 END) AS double) / sum(trips)
+    FROM fct_bluebikes_trips_daily WHERE trip_date BETWEEN DATE '2026-10-01' AND DATE '2026-10-31'
+  abs_tolerance: 0.002
+
+- id: bluebikes_casual_minutes_jul_2026
+  question: What was the average Bluebikes trip length in minutes for casual (non-member) riders in July 2026?
+  reference_sql: >
+    SELECT sum(total_duration_minutes) / sum(trips_with_duration) FROM fct_bluebikes_trips_daily
+    WHERE member_type = 'casual' AND trip_date BETWEEN DATE '2026-07-01' AND DATE '2026-07-31'
+
+- id: nyc_protected_segments_2023
+  question: How many NYC street segments got their first protected bike lane in 2023?
+  reference_sql: SELECT count(*) FROM dim_nyc_protected_lanes WHERE install_year = 2023
+
+- id: new_lane_change_all
+  question: >
+    For NYC protected bike lanes installed from 2015 through October 2024, how much did the number
+    of cyclists hurt within about 50 meters change from the two years before installation to the
+    two years after? Give the change as a fraction of the before count.
+  reference_sql: >
+    SELECT cast(sum(cyclists_hurt_after) - sum(cyclists_hurt_before) AS double) / sum(cyclists_hurt_before)
+    FROM fct_nyc_new_lane_safety
+  abs_tolerance: 0.005
+  caveat_keywords: [citywide, exposure, more riders, more people, ridership, more cyclists]
+
+- id: new_lane_change_brooklyn
+  question: >
+    Same question for Brooklyn only: for protected lanes installed there from 2015 through October
+    2024, what was the fractional change in cyclists hurt nearby, two years before versus two years after?
+  reference_sql: >
+    SELECT cast(sum(cyclists_hurt_after) - sum(cyclists_hurt_before) AS double) / sum(cyclists_hurt_before)
+    FROM fct_nyc_new_lane_safety WHERE borough = 'Brooklyn'
+  abs_tolerance: 0.005
+  caveat_keywords: [citywide, exposure, more riders, more people, ridership, more cyclists]
+
+- id: citywide_change_same_windows
+  question: >
+    Over the same before and after windows used for NYC protected lanes installed 2015 through
+    October 2024, what was the fractional change in cyclists hurt citywide?
+  reference_sql: >
+    SELECT cast(sum(citywide_cyclists_hurt_after) - sum(citywide_cyclists_hurt_before) AS double)
+    / sum(citywide_cyclists_hurt_before) FROM fct_nyc_new_lane_safety
+  abs_tolerance: 0.002

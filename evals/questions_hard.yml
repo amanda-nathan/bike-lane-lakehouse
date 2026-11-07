@@ -1,0 +1,106 @@
+# Questions where the definition is the hard part. A good answer gets a defensible number
+# and makes the point in must_mention, which a model grades.
+#
+# reference_sql: the expected answer. accepted_sql: other answers that are also defensible.
+# Reference SQL is trusted and may read any schema; the agents can only read iceberg.marts.
+
+- id: washington_2024
+  question: How many bikes a day ride on Washington Street north of Bexley Road in Roslindale? Use 2024.
+  reference_sql: >
+    SELECT avg(bikes) FROM fct_boston_bike_counts_daily
+    WHERE location_name = 'Washington Street north of Bexley Road' AND count_year = 2024
+  accepted_sql:
+    - >
+      SELECT avg(bikes) FROM fct_boston_bike_counts_daily
+      WHERE location_name = 'Washington Street north of Bexley Road' AND count_year = 2024 AND season = 'Summer'
+    - >
+      SELECT avg(bikes) FROM fct_boston_bike_counts_daily
+      WHERE location_name = 'Washington Street north of Bexley Road' AND count_year = 2024 AND season = 'Fall'
+  must_mention: The number depends heavily on season (or is based on only a few count days), so a single 2024 figure hides a wide range.
+
+- id: washington_growth
+  question: By how much did bike traffic on Washington Street north of Bexley Road grow from 2018 to 2025? Give the change as a fraction.
+  reference_sql: >
+    SELECT max(CASE WHEN count_year = 2025 THEN a END) / max(CASE WHEN count_year = 2018 THEN a END) - 1
+    FROM (SELECT count_year, avg(bikes) AS a FROM fct_boston_bike_counts_daily
+          WHERE location_name = 'Washington Street north of Bexley Road' AND season = 'Summer' GROUP BY 1)
+  accepted_sql:
+    - >
+      SELECT max(CASE WHEN count_year = 2025 THEN a END) / max(CASE WHEN count_year = 2018 THEN a END) - 1
+      FROM (SELECT count_year, avg(bikes) AS a FROM fct_boston_bike_counts_daily
+            WHERE location_name = 'Washington Street north of Bexley Road' AND season = 'Fall' GROUP BY 1)
+    # Summer and fall pooled: the seasons counted in both years. Added after an agent used it.
+    - >
+      SELECT max(CASE WHEN count_year = 2025 THEN a END) / max(CASE WHEN count_year = 2018 THEN a END) - 1
+      FROM (SELECT count_year, avg(bikes) AS a FROM fct_boston_bike_counts_daily
+            WHERE location_name = 'Washington Street north of Bexley Road' AND season IN ('Summer', 'Fall') GROUP BY 1)
+  abs_tolerance: 0.01
+  must_mention: It compares the same season in both years, because averaging all seasons is biased (winter and spring counts were added later).
+
+- id: nyc_2026_vs_2025
+  question: Did cyclist injuries in NYC go down in 2026 compared with 2025? Give the change as a fraction.
+  reference_sql: >
+    SELECT cast(sum(CASE WHEN crash_year = 2026 THEN cyclists_injured END) AS double)
+         / sum(CASE WHEN crash_date BETWEEN DATE '2025-01-01' AND date_add('year', -1, (SELECT max(crash_date) FROM fct_nyc_crashes))
+                    THEN cyclists_injured END) - 1
+    FROM fct_nyc_crashes
+  abs_tolerance: 0.01
+  must_mention: 2026 is a partial year, so it is compared with the same period of 2025, not the full year.
+
+- id: nyc_vs_boston
+  question: How many times more bike crashes did NYC have than Boston in 2024?
+  reference_sql: >
+    SELECT cast((SELECT count(*) FROM fct_nyc_crashes WHERE crash_year = 2024 AND cyclists_hurt > 0) AS double)
+         / (SELECT count(*) FROM fct_boston_crashes WHERE mode = 'bike' AND year(crash_date) = 2024)
+  tolerance: 0.02
+  must_mention: The two cities' numbers aren't directly comparable because they come from different sources (NYPD police reports vs. Boston EMS dispatches).
+
+- id: lanes_more_dangerous
+  question: Are protected bike lanes making NYC streets more dangerous for cyclists? Give the change in cyclists hurt near new lanes as a fraction.
+  reference_sql: >
+    SELECT cast(sum(cyclists_hurt_after) - sum(cyclists_hurt_before) AS double) / sum(cyclists_hurt_before)
+    FROM fct_nyc_new_lane_safety
+  abs_tolerance: 0.005
+  must_mention: The data can't show the lanes made streets more dangerous, because more people ride after a lane opens and there is no ridership count to adjust for that.
+
+- id: staten_island_lanes
+  question: How did cyclist injuries change near new protected bike lanes on Staten Island? Give the change as a fraction.
+  reference_sql: >
+    SELECT cast(sum(cyclists_hurt_after) - sum(cyclists_hurt_before) AS double) / sum(cyclists_hurt_before)
+    FROM fct_nyc_new_lane_safety WHERE borough = 'Staten Island'
+  accepted_sql:
+    # Each crash counted once, not once per nearby segment. Added after an agent found the
+    # double count in fct_nyc_new_lane_safety and matched crashes to lanes itself.
+    - >
+      SELECT cast(count(DISTINCT CASE WHEN period = 'after' THEN collision_id END) AS double)
+           / count(DISTINCT CASE WHEN period = 'before' THEN collision_id END) - 1
+      FROM iceberg.intermediate.int_nyc__cyclist_crashes_near_new_lanes c
+      JOIN iceberg.marts.dim_nyc_protected_lanes l ON l.segment_id = c.segment_id
+      WHERE l.borough = 'Staten Island'
+  abs_tolerance: 0.05
+  must_mention: The counts are tiny (one injury before), so the percentage change is not meaningful.
+
+- id: manhattan_2025
+  question: How many cyclists were hurt in crashes in Manhattan in 2025?
+  reference_sql: SELECT sum(cyclists_hurt) FROM fct_nyc_crashes WHERE crash_year = 2025 AND borough = 'Manhattan'
+  accepted_sql:
+    - SELECT sum(cyclists_injured) FROM fct_nyc_crashes WHERE crash_year = 2025 AND borough = 'Manhattan'
+  must_mention: Many crashes have no borough recorded, so the Manhattan count is an undercount.
+
+- id: centre_street_west_roxbury
+  question: What fraction of traffic on Centre Street in West Roxbury is bikes?
+  reference_sql: >
+    SELECT cast(sum(bikes) AS double) / sum(bikes + vehicles) FROM fct_boston_bike_counts_daily
+    WHERE location_name = 'Centre Street east of Willow Street'
+  abs_tolerance: 0.001
+  must_mention: It is based on only a handful of count days (6), so it is a rough figure.
+
+- id: bluebikes_2025
+  question: How many Bluebikes trips were taken in 2025?
+  reference_sql: SELECT sum(trips) FROM fct_bluebikes_trips_daily WHERE year(trip_date) = 2025
+  must_mention: The data only covers the last 12 months (from about November 2025), so this is not a full-year 2025 total.
+
+- id: boston_bike_crashes_last_year
+  question: How many bike crashes did Boston have last year?
+  reference_sql: SELECT count(*) FROM fct_boston_crashes WHERE mode = 'bike' AND year(crash_date) = year(current_date) - 1
+  must_mention: The count comes from EMS (ambulance) dispatches, so crashes without an ambulance call are missing.

@@ -1,0 +1,2048 @@
+{
+ "model": "claude-haiku-5-5",
+ "questions": "questions.yml",
+ "repeats": 3,
+ "judge": "claude-opus-5-5",
+ "results": [
+  {
+   "id": "nyc_cyclist_crashes_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4514.0
+   ],
+   "got": 4514.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12303,
+   "output_tokens": 712,
+   "answer": "In 2025, **4,514** NYC crashes hurt at least one cyclist, based on `fct_nyc_crashes`, where `cyclists_hurt` is cyclists injured plus cyclists killed.\n\nThings to know before relying on this:\n- The data covers all of 2025, from January 1 to December 31, and has no null values in `cyclists_hurt`.\n- This counts crashes, not people. A crash with several injured cyclists counts once.\n- The source is NYPD collision reports. Those reports are often incomplete or revised, so the count may shift as records are updated.\n- About 11% of crashes in the table have no location and 29% have no borough. This count doesn't filter on location, so it includes those crashes.\n\nANSWER: 4514",
+   "repeat": 0
+  },
+  {
+   "id": "nyc_cyclists_killed_2024",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    22.0
+   ],
+   "got": 22.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12401,
+   "output_tokens": 743,
+   "answer": "In NYC's NYPD collision data, 22 cyclists were killed in crashes dated 2024.\n\nThe figure comes from `fct_nyc_crashes`, which has 91,316 collisions dated 2024 (January 1 to December 31). Every row has a `cyclists_killed` value, with no nulls, and each collision ID appears once, so nothing is double-counted. The table is built from NYPD reports, so it reflects police-recorded crashes and may differ from death certificate or medical-examiner counts.\n\nFor context, the same table shows 31 cyclist deaths in 2023 and 10 in 2025 (a partial-year check isn't needed since the 2025 data runs through December 31 as well). These are small counts, so year-to-year changes are noisy.\n\nANSWER: 22",
+   "repeat": 0
+  },
+  {
+   "id": "nyc_cyclists_injured_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4114.0
+   ],
+   "got": 4114.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12335,
+   "output_tokens": 875,
+   "answer": "**4,114 cyclists were injured in NYC crashes in 2026**, based on NYPD crash reports from January 1 through November 3, 2026.\n\n- The count covers 70,720 collisions, with no duplicate collision IDs.\n- The year is partial. Data ends November 3, so this is a year-to-date figure, not a full-year total.\n- The 4,114 counts injuries only. Five cyclists were killed in the same period, and the table's `cyclists_hurt` column (injured plus killed) totals 4,119.\n- I summed `cyclists_injured` directly and did not check for null values in that column. Nulls would be skipped by the sum, so the total could be slightly low if any exist.\n- NYPD reports can be revised after first filing, so recent figures may change.\n\nANSWER: 4114",
+   "repeat": 0
+  },
+  {
+   "id": "nyc_top_borough_cyclist_crashes_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    1542.0
+   ],
+   "got": 1542.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12484,
+   "output_tokens": 906,
+   "answer": "**Manhattan had the most crashes that hurt a cyclist in 2025: 1,542 crashes.**\n\n- The count is crashes (collisions) where `cyclists_hurt` is greater than zero, using `fct_nyc_crashes` filtered to `crash_year = 2025`. Cyclists hurt is injured plus killed.\n- Brooklyn was second with 1,452 crashes, then Queens with 883, the Bronx with 461, and Staten Island with 52.\n- 124 crashes from 2025 have no borough recorded, so they aren't in any borough's count. Even if they all belonged to one borough, that would not change the ranking, since Brooklyn trails Manhattan by 90.\n- Counted by cyclists hurt instead, Manhattan still leads (1,570 versus Brooklyn's 1,471).\n- The 2025 data runs from January 1 to December 31, and every row has a cyclist-hurt value, so the year looks complete. The table is NYPD police reports, so the counts reflect reported collisions only.\n\nANSWER: 1542",
+   "repeat": 0
+  },
+  {
+   "id": "nyc_pedestrians_killed_2023",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    107.0
+   ],
+   "got": 107.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12339,
+   "output_tokens": 1177,
+   "answer": "**107 pedestrians were killed in NYC crashes in 2023**, according to the NYPD crash reports in `fct_nyc_crashes`.\n\nThe 2023 total covers the full year: 96,608 crash records, all with a crash date, and no null values in the pedestrian-killed field. The table is partitioned by crash year, so filtering on `crash_year = 2023` gives the complete year.\n\nThings to know before relying on this number:\n- It is a sum of the NYPD's per-collision `pedestrians_killed` field. It reflects what police recorded, not an independent count from medical examiner or DOT records.\n- The table notes that about 11% of crashes have no location and 29% have no borough. The pedestrian-killed total still includes those crashes, but you can't break it down by borough for those records.\n- The 2022 and 2024 figures I pulled (15 and 10) are single-month slices, December 2022 and January 2024, so they aren't comparable to the full-year 2023 total.\n\nANSWER: 107",
+   "repeat": 0
+  },
+  {
+   "id": "nyc_no_borough_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    7100.0
+   ],
+   "got": 7100.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 17916,
+   "output_tokens": 679,
+   "answer": "There are 7,100 NYC crashes in 2025 with no borough recorded, out of 85,559 crashes that year (about 0.08 of them).\n\nI counted by `crash_year = 2025` and got the same 7,100 when filtering on the year of `crash_date`. The table notes that a borough is null when NYPD didn't record one, and that about 29% of crashes overall lack a borough. The 2025 share is lower, so the gap is not uniform across years. The 2025 figure may also still be incomplete if recent reports are filed late, but the table doesn't say so.\n\nFraction of 2025 crashes with no borough: 7,100 / 85,559 \u2248 0.08.\n\nANSWER: 7100",
+   "repeat": 0
+  },
+  {
+   "id": "washington_st_summer_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    546.5
+   ],
+   "got": 546.5,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 15386,
+   "output_tokens": 760,
+   "answer": "On Washington Street north of Bexley Road, the average was **546.5 bikes per day** in summer 2025.\n\n- **Source:** The Boston daily count table, filtered to location 60 and season \"Summer\" in 2025. Bikes are counted over 24 hours, both directions.\n- **Sample size:** Only two days were counted, June 11 (552 bikes) and June 12 (541 bikes). The average is from those two days, not the whole summer. Locations are counted a couple of days per season, so this is a thin basis for a seasonal average.\n- **Weather:** Both days were fair, with highs of 82\u00b0 and 86\u00b0, so they are not unusual conditions.\n- **Excluded:** The table also has a summer 2026 count (574 on average), which is outside the requested period.\n\nANSWER: 546.5",
+   "repeat": 0
+  },
+  {
+   "id": "boston_avg_bikes_summer_2024",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    652.4125
+   ],
+   "got": 652.4125,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 25089,
+   "output_tokens": 1084,
+   "answer": "**Average bikes per count day, Boston, summer 2024: about 652.4**\n\nThe Boston count table has 160 count days in summer 2024, spanning 83 locations, from June 11 to July 10. The average across those days is 652.4125 bikes, with no missing bike counts.\n\nThings to know before relying on this:\n\n- **Uneven coverage.** Most locations are counted on about two days per season, but the days are not spread evenly. Most fall in mid-June, and a few are single-day or one-off counts (for example, Stuart Street on June 27, and Ruggles Street on July 9 and 10). The average weights each count day equally, so the mix of locations on those days shapes the result.\n- **Mixed site sizes.** Counts range from under 10 bikes a day to over 4,000 (Massachusetts Avenue north of Back Street, 4,364 on June 18). A few high-volume sites pull the mean up, so it is not a typical location's count.\n- **Season comparisons.** Summer 2024 is a different set of locations and dates from other years. Summer 2025 averaged 792.0 over 110 days, and summer 2023 averaged 718.0. Those gaps partly reflect which sites were counted, so they are not a clean year-over-year trend.\n\nANSWER: 652.4125",
+   "repeat": 0
+  },
+  {
+   "id": "boston_bike_share_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.04453249276536297
+   ],
+   "got": 0.0445,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 4,
+   "input_tokens": 20375,
+   "output_tokens": 1618,
+   "answer": "In Boston's 2025 counts, bikes were about 4.5% of all counted traffic (bikes plus motor vehicles).\n\n- **Totals:** 303,464 bikes and 6,510,976 motor vehicles, so 303,464 / 6,814,440 \u2248 0.0445.\n- **Source:** `fct_boston_bike_counts_daily`, filtered to `count_year = 2025`. That is 438 location-days across 91 count locations, from March 11 to December 10, 2025. No rows had null bikes or vehicles.\n- **Seasonal spread:** Winter was lowest (about 0.032) and Summer highest (about 0.048). Fall was about 0.047 and Spring about 0.045.\n\nBefore relying on this number:\n- Each location is counted only about two days per season, and the set of locations varies by season. The overall figure is a pooled ratio of totals, so it is weighted toward the busiest counted locations and days, and it reflects the mix of seasons sampled.\n- These are 24-hour counts in both directions. They are not a measure of the whole city's traffic.\n\nANSWER: 0.0445",
+   "repeat": 0
+  },
+  {
+   "id": "boston_locations_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    48.0
+   ],
+   "got": 48.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12895,
+   "output_tokens": 925,
+   "answer": "Boston counted **48 distinct locations in 2026**, based on `fct_boston_bike_counts_daily` filtered to `count_year = 2026`.\n\nThings to know before relying on this:\n- **The 2026 data is partial.** Counts run from 2026-03-10 to 2026-09-17, so the year is not complete. Locations counted later in the year would not be included yet.\n- **Counts are seasonal.** Each location is counted for about two days per season, so the 48 figure is a count of locations with at least one count day in 2026, not a measure of ongoing coverage.\n- **Year-over-year comparisons are misleading.** The 2025 total of 91 covers the full year. Comparing it to 48 would mix a partial year with a full one, and the 2026 total could still rise.\n- The year column matches the date in every row, so there are no mismatched years.\n\nANSWER: 48",
+   "repeat": 0
+  },
+  {
+   "id": "boston_top_location_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4588.75
+   ],
+   "got": 4588.75,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 13312,
+   "output_tokens": 1076,
+   "answer": "Massachusetts Avenue north of Back Street (location 44) had the highest 2025 average, at about 4,589 bikes per count day (4588.75 across 8 count days).\n\nThings to know before relying on this:\n\n- **Mixed seasons.** Each location is counted on about two days per season, and the 2025 counts run from March to December. A location's average depends partly on which seasons it was counted in, so this ranking mixes seasonal conditions. The table's documentation recommends comparing the same season across years, and I did not do a season-by-season comparison.\n- **Uneven sample sizes.** Several high-ranking locations have only 2 count days in 2025, all from September or October. Location 44 has 8 days, so its average rests on more data than most of the top 10.\n- **Data completeness.** The 2025 data has 438 location-days across 91 locations, with no null bike counts and no duplicate location-days.\n\nANSWER: 4588.75",
+   "repeat": 0
+  },
+  {
+   "id": "boston_peak_hour",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    17.0
+   ],
+   "got": 17.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 13172,
+   "output_tokens": 968,
+   "answer": "The busiest hour is **17:00 (5 p.m., Boston local time)**, with 234,843 bikes counted across all hourly rows. It also leads on average (about 40.9 bikes per location-direction-hour), so the ranking doesn't depend on whether you sum or average.\n\nThings to know before relying on this:\n- Each location is counted for only about two days per season, and locations are counted on different days. The total therefore reflects which sites and dates were sampled, not a full year of traffic at every site. The hour ranking is still clear, but the absolute totals aren't meaningful on their own.\n- Counts are per location and direction, so the same hour can appear multiple times for one site. The hourly table has 5,738 rows per hour of day, across 91 locations and 2016-06-08 to 2026-09-17.\n- The 8:00 a.m. peak (208,826) is a close second, so the morning and evening commute pattern is clear. Hour 17 is the single highest.\n\nANSWER: 17",
+   "repeat": 0
+  },
+  {
+   "id": "boston_bike_crashes_2024",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    366.0
+   ],
+   "got": 366.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12095,
+   "output_tokens": 615,
+   "answer": "Boston's Vision Zero data records **366** crashes involving a person on a bike in 2024.\n\nThings to know before relying on this number:\n\n- **Source scope:** The table is built from EMS dispatch records, so crashes that never led to an ambulance call are missing. The true count of bike crashes is likely higher.\n- **Dedup check:** Each 2024 row has a unique crash ID, so the 366 is not inflated by duplicate dispatches.\n- **Mode field:** Each crash has a single `mode` value. The 2024 breakdown was 2,627 motor vehicle, 465 pedestrian, and 366 bike.\n- **Comparability:** Boston's EMS-based records are not directly comparable with NYC's NYPD collision reports.\n\nANSWER: 366",
+   "repeat": 0
+  },
+  {
+   "id": "bluebikes_trips_sep_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    555121.0
+   ],
+   "got": 555121.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12333,
+   "output_tokens": 673,
+   "answer": "Bluebikes recorded **555,121 trips** in September 2026.\n\nI summed the `trips` column in `fct_bluebikes_trips_daily` for dates from September 1 to September 30. All 30 days are present, so the month is complete. The count covers all start stations, member types, and bike types. It includes e-bike trips that began away from a station, which have a null start station but are still counted in the total.\n\nFor context, the neighboring months are June 515,820, July 530,372, August 582,585, and October 571,583. September is slightly below August, which is plausible for a seasonal drop.\n\nANSWER: 555121",
+   "repeat": 0
+  },
+  {
+   "id": "bluebikes_ebike_share_oct_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.4039290881639237
+   ],
+   "got": 0.4,
+   "correct": false,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12504,
+   "output_tokens": 1037,
+   "answer": "About 40% of October 2026 Bluebikes trips were on electric bikes.\n\nI summed `trips` in `fct_bluebikes_trips_daily` for October 1\u201331, 2026: 230,879 electric-bike trips out of 571,583 total (340,704 classic). That gives 230,879 / 571,583 \u2248 0.404. The month's data covers all 31 days.\n\nThings to know before relying on this:\n- The table is a daily aggregate by start station, member type, and bike type. I summed the `trips` column, so the figure counts all trips, including those without a usable duration.\n- The table notes that e-bike trips starting away from a station have a null station ID. I didn't filter on station, so those trips are included. The docs don't say whether classic trips can also lack a station, so I can't confirm the total is complete on that point.\n- For context, the e-bike share was about 0.37 in August (213,652 of 582,585) and about 0.37 in September (205,990 of 555,121). October's share is higher.\n\nANSWER: 0.40",
+   "repeat": 0
+  },
+  {
+   "id": "bluebikes_casual_minutes_jul_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    25.260724414136618
+   ],
+   "got": 25.26,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 12419,
+   "output_tokens": 931,
+   "answer": "The average casual Bluebikes trip in July 2026 was about 25.26 minutes, across both classic and electric bikes.\n\n- **Method:** I summed `total_duration_minutes` and divided by the sum of `trips_with_duration` for casual riders with trip dates from July 1 to July 31, 2026. Using the duration-count column keeps trips without a usable duration out of the denominator.\n- **Components:** Classic-bike casual trips averaged 26.86 minutes (144,160 trips). Electric-bike casual trips averaged 19.58 minutes (40,610 trips). Combined, that is 4,667,424 minutes over 184,770 trips.\n- **Caveats:** The table excludes trips that cross the November clock change, which doesn't affect July. Trip times are local. The average is a simple mean, so a few very long trips can pull it up; the table doesn't provide a median to check that. Some e-bike trips have no start station, but they are still included in these totals.\n\nANSWER: 25.26",
+   "repeat": 0
+  },
+  {
+   "id": "nyc_protected_segments_2023",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    687.0
+   ],
+   "got": 687.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 4,
+   "input_tokens": 22690,
+   "output_tokens": 1334,
+   "answer": "**687 NYC street segments** have an install year of 2023 in `dim_nyc_protected_lanes`, which has one row per segment that has ever had a protected bike lane.\n\nWhat a reader should know before relying on this:\n\n- **Install dates are not all reliable.** The table includes install years going back to 1894, so the dates likely come from old facility records and don't always mean a lane was built then. The 2023 rows look more plausible, with dates spread through the year, but a few days carry large batches (100 segments on 2023-06-20, 94 on 2023-09-01, 72 on 2023-12-21). Those may be bulk-entry dates rather than actual construction dates.\n- **The count includes segments that are no longer current.** Of the 687, 685 still have a current bike facility record; 2 do not.\n- **\"First\" lane is taken from the table's installed_on field,** which the table describes as the date the first protected lane went in. I did not check that against other sources.\n- Each segment appears once (no duplicate segment IDs, no missing dates), so the count is of distinct segments, not of install events.\n\nANSWER: 687",
+   "repeat": 0
+  },
+  {
+   "id": "new_lane_change_all",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.17304492512479203
+   ],
+   "got": 0.173,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 4,
+   "input_tokens": 26670,
+   "output_tokens": 1568,
+   "answer": "The change is about **+0.17**: cyclists hurt within about 50 m of the new lanes rose from 4,207 in the two years before installation to 4,935 in the two years after, which is (4,935 \u2212 4,207) / 4,207 = 728 / 4,207 \u2248 0.173.\n\nWhat a reader should know before relying on this:\n\n- **Source and scope:** The figures come from `fct_nyc_new_lane_safety`, which covers 4,349 protected-lane segments installed from 2015 through October 2024. Every segment has both windows populated.\n- **Double counting:** A crash near adjacent segments counts once per segment, so these totals can count the same crash more than once. This is the intended design, but it means the sums are not city-level crash counts.\n- **Uneven install years:** The change is driven by a few cohorts. Segments installed in 2020 went from 685 to 1,023 hurt, and 2016 went from 559 to 626. Other cohorts fell, such as 2022 (426 to 385) and 2023 (476 to 593 rising, so that one also rose). The 2020 cohort's \"after\" window overlaps the pandemic period, when cycling volumes changed sharply, so that spike may not reflect the lanes themselves.\n- **No clean control:** The citywide cyclist-injury columns vary by install date, so there is no single citywide baseline to compare against. Read this as a raw before/after change, not a causal effect of the lanes.\n\nANSWER: 0.173",
+   "repeat": 0
+  },
+  {
+   "id": "new_lane_change_brooklyn",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.43501611170784105
+   ],
+   "got": 0.435,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 19406,
+   "output_tokens": 1369,
+   "answer": "Brooklyn cyclists hurt near new protected lanes rose by about 43.5%: 931 in the two years before installation versus 1,336 in the two years after.\n\n- **Source:** `fct_nyc_new_lane_safety`, filtered to borough = Brooklyn. It covers 843 segments installed from 2015 through October 2024, each with a distunct segment ID (no duplicates).\n- **Method:** Cyclists hurt are counted within about 50 m of each segment. A crash near adjacent segments counts once per segment, so the totals can double-count the same crash.\n- **Change:** (1,336 \u2212 931) / 931 = 0.435.\n\nBefore relying on this number:\n- It is a raw before/after comparison with no control group. Cyclist injuries may have been rising or falling citywide over the same period, so some or all of the change may not be due to the lanes. The table has citywide counts, but I did not pull the Brooklyn-specific comparison.\n- Segments were installed at different dates, so their before and after windows fall in different calendar years. Later installs may have after-windows that run close to the end of the data.\n- Cycling volume is not adjusted for, so more riders would also raise the count.\n\nANSWER: 0.435",
+   "repeat": 0
+  },
+  {
+   "id": "citywide_change_same_windows",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.017483580955972328
+   ],
+   "got": 0.017,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 7,
+   "input_tokens": 48026,
+   "output_tokens": 3393,
+   "answer": "The citywide cyclists-hurt change across the protected-lane install windows is about **+1.7%** (0.017).\n\n**How I got it:** I used `fct_nyc_new_lane_safety`, which has citywide cyclist-injury counts for each segment's own two-year before and after windows. Each segment has its own window, so I averaged across all 4,349 segments: mean before \u2248 9,873, mean after \u2248 10,046. Averaging over the 254 distinct install dates instead gives the same result, +0.017.\n\n**What a reader should know:**\n- **The change is not a causal effect.** It is a simple before/after comparison of citywide totals. Citywide counts move for many reasons, including ridership, weather and reporting, so this does not isolate the effect of the lanes.\n- **Results vary a lot by install year.** Yearly changes run from about \u22120.08 (2024) to +0.21 (2015). The 2015 figure rests on only 17 install dates.\n- **Crash-date coverage needs a check.** The crash table runs to 2026-11-03, which looks odd. Post-install windows for later installs reach into that period, so I would verify the late-date records before relying on the 2023\u20132024 cohorts.\n- **My recalculation doesn't exactly match the mart.** Rebuilding the windows from raw crashes gives counts that differ by roughly 10\u201315 crashes per window. I used the mart's published values, since that is the designated source.\n\nANSWER: 0.017",
+   "repeat": 0
+  },
+  {
+   "id": "nyc_cyclist_crashes_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4514.0
+   ],
+   "got": 4514.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22379,
+   "output_tokens": 729,
+   "answer": "In 2025, NYPD reported **4,514 crashes** in NYC that hurt at least one cyclist (injured or killed).\n\nThings to know before relying on it:\n- **Source:** These are police-reported crashes, so they are not directly comparable with Boston's EMS-based counts.\n- **Completeness:** The metric's caveat says the current year is partial. The data also has a 2026 row, so 2025 should be a full year, but I did not check its completeness separately.\n- **Exposure:** The count does not adjust for how many people ride, and ridership has grown, so it cannot show whether cycling became safer or riskier.\n- **Borough gaps:** About 29% of crashes have no borough. This citywide total includes them, but any borough breakdown will leave them out.\n\nFor context, the same metric gives 5,084 for 2024 and 5,482 for 2020.\n\nANSWER: 4514",
+   "repeat": 0
+  },
+  {
+   "id": "nyc_cyclists_killed_2024",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    22.0
+   ],
+   "got": 22.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22250,
+   "output_tokens": 640,
+   "answer": "**22 cyclists were killed in NYC crashes in 2024**, according to the `nyc_cyclists_killed` metric, which sums the police-reported cyclist deaths by crash date.\n\nThings to know before relying on this:\n- The data includes crashes with no borough recorded (about 29% of crashes). That doesn't affect the citywide total, but it would matter for any borough breakdown.\n- The metric's \"partial year\" caveat applies to the current year, which the data shows as 2026. 2024 is a complete year.\n- The source is NYPD crash reports, so it isn't directly comparable with Boston's EMS-based counts.\n- For context, the yearly counts run from 6 (2012) to 31 (2019 and 2023). 2024's 22 is below the 2023 peak and above 2025's 10 (a partial year at the time of the data).\n\nANSWER: 22",
+   "repeat": 0
+  },
+  {
+   "id": "nyc_cyclists_injured_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4114.0
+   ],
+   "got": 4114.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 4,
+   "input_tokens": 30140,
+   "output_tokens": 972,
+   "answer": "The semantic layer reports **4,114 cyclists injured** in NYC crashes for 2026 so far.\n\nBefore relying on this number:\n\n- **2026 is a partial year.** The metric's caveat says so, and I could not confirm how far into the year the data runs (a follow-up month-level query failed). The total will rise as the year goes on, so it is not comparable with full-year figures yet.\n- **Source:** these are NYPD police-reported crashes. Crashes with no police report are missing, so this undercounts actual injuries.\n- **Borough gaps:** about 29% of crashes have no borough. I used the citywide total, so this does not affect the figure, but it would affect any borough breakdown.\n- **No exposure adjustment:** the count does not account for how many people ride, and ridership has grown, so it cannot show whether cycling became safer or riskier.\n\nFor context, full-year totals from the same metric range from 4,000 to 5,576 (2014 to 2025, with 2020 the highest), but 2026 cannot be compared with those until the year is complete.\n\nANSWER: 4114",
+   "repeat": 0
+  },
+  {
+   "id": "nyc_top_borough_cyclist_crashes_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    1542.0
+   ],
+   "got": 1542.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 24980,
+   "output_tokens": 959,
+   "answer": "**Manhattan** had the most NYC crashes that hurt a cyclist in 2025, with **1,542**. Brooklyn was second with 1,452, then Queens (883), the Bronx (461), and Staten Island (52).\n\nThings to know before relying on this:\n- **Missing borough:** about 29% of NYC crashes have no borough in the data. Another 124 crashes from 2025 fall into that group, so the borough ranking leaves them out.\n- **Police-reported:** these counts come from NYPD crash reports, so they aren't directly comparable with Boston's EMS-based numbers.\n- **No ridership adjustment:** raw counts don't account for how many people ride in each borough, so Manhattan's lead partly reflects heavier cycling there.\n- **Crash-level count:** each crash counts once if at least one cyclist was hurt or killed, not once per injured cyclist.\n\nANSWER: 1542",
+   "repeat": 0
+  },
+  {
+   "id": "nyc_pedestrians_killed_2023",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    107.0
+   ],
+   "got": 107.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22249,
+   "output_tokens": 448,
+   "answer": "NYC police-reported crashes recorded **107 pedestrians killed in 2023**, according to the `nyc_pedestrians_killed` metric. The metric has no caveats of its own. 2023 is a complete year, so this is not a partial count. The figures come from NYPD reports, so they may not match counts from other sources such as the city's Vision Zero data.\n\nANSWER: 107",
+   "repeat": 0
+  },
+  {
+   "id": "nyc_no_borough_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    7100.0
+   ],
+   "got": 7100.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 24711,
+   "output_tokens": 755,
+   "answer": "**7,100 NYC crashes in 2025 have no borough recorded.**\n\nI pulled `nyc_crashes` grouped by year and borough. The 2025 rows are Brooklyn 26,712, Staten Island 3,128, Bronx 12,291, Queens 21,840, Manhattan 14,488, and a null-borough row of 7,100. The null share is about 0.08 of the 2025 total (roughly 85,600 crashes).\n\nThings to know before relying on this:\n- The metric's caveat says about 29% of crashes have no borough across all years. The 2025 share is much lower, so that figure shouldn't be applied to 2025.\n- These are police-reported (NYPD) crashes, all modes. They aren't directly comparable with Boston's EMS-based counts.\n- 2025 is a complete year in this data. The partial year is 2026.\n\nANSWER: 7100",
+   "repeat": 0
+  },
+  {
+   "id": "washington_st_summer_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    546.5
+   ],
+   "got": 546.5,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 25938,
+   "output_tokens": 633,
+   "answer": "In summer 2025, Washington Street north of Bexley Road in Roslindale averaged **546.5 bikes per counted day**, based on 2 count days.\n\nThings to know before relying on this number:\n- **Small sample:** Each Boston location is counted for about two days, a few times a year. Two days can swing a lot, so treat this as a rough estimate.\n- **Season mix:** Summer is one of several seasons the City counts. Compare it with other summers, not with all-season averages.\n- **Traffic share isn't included here:** The bike count stands alone; I didn't compare it with motor-vehicle counts.\n\nANSWER: 546.5",
+   "repeat": 0
+  },
+  {
+   "id": "boston_avg_bikes_summer_2024",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    652.4125
+   ],
+   "got": 652.41,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 15852,
+   "output_tokens": 719,
+   "answer": "In summer 2024, Boston's bike counts averaged about **652.41 bikes per location per count day**, across 160 location-days.\n\n- **Sample size:** The average covers 160 location-days, and total bikes counted were 104,386. 104,386 \u00f7 160 gives the same figure, so the calculation checks out.\n- **Small samples:** Each location is counted for about two days a few times a year, so individual locations can swing a lot. The metric's caveats recommend reporting the 160-day count alongside the average.\n- **Seasonal comparison:** Since 2020 the City also counts in winter and spring, which pulls all-season averages down. This figure is summer-only, so compare it with other summers, not with annual averages.\n- **Unit:** This is an average per location per day, not a citywide total. The total is not a like-for-like measure across periods with different numbers of counted locations.\n\nANSWER: 652.41",
+   "repeat": 0
+  },
+  {
+   "id": "boston_bike_share_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.04453249276536297
+   ],
+   "got": 0.04453,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 16687,
+   "output_tokens": 694,
+   "answer": "In 2025, bikes were about **0.045** (4.5%) of all counted Boston traffic: 303,464 bikes out of 6,814,440 bikes plus motor vehicles.\n\nThings to know before relying on this:\n- **Sample:** Counts cover only a few days per location, a few times a year (438 location-days in 2025). The share is an aggregate over whichever locations and days were counted, so it reflects that sample, not year-round traffic everywhere.\n- **Seasonality:** Since 2020 the City also counts in winter and spring, which lowers the all-season share. Compare the same season across years before reading a trend into it.\n- **Trend context:** The 2025 share is close to 2024's (0.044) and up from 2019\u20132021 (0.03\u20130.04), but the sample changed between years.\n\nANSWER: 0.04453",
+   "repeat": 0
+  },
+  {
+   "id": "boston_locations_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    48.0
+   ],
+   "got": 48.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 16667,
+   "output_tokens": 1193,
+   "answer": "**48 distinct Boston bike count locations** were counted in 2026.\n\nI grouped the `boston_count_days` metric by location for count year 2026 and counted the distinct location names returned. Each location appears with 2 to 6 count-days, which is the sample behind each location. Because the metric counts location-days, a location shows up only if it was counted at least once in 2026. Counts are typically taken on about two days per location, a few times a year, so the per-location samples are small. I did not check how far into 2026 the data runs, so this is the count to date, not a full-year total.\n\nANSWER: 48",
+   "repeat": 0
+  },
+  {
+   "id": "boston_top_location_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4588.75
+   ],
+   "got": 4588.75,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 23003,
+   "output_tokens": 888,
+   "answer": "The top Boston count location in 2025 was **Massachusetts Avenue north of Back Street**, with an average of **4,588.75 bikes per count day** across 8 count days.\n\nThings to know before relying on this number:\n- **Sample size:** Each location is counted for only about two days a few times a year. This site's 8 count days are a fair sample for its rank, but the next location down (BU Bridge, 2,184.5) has only 6 days, and several sites in the top ten have just 2.\n- **Seasonality:** The average mixes whatever seasons were counted. Since 2020 the City also counts in winter and spring, which pulls all-season averages down. I did not split the result by season, so the gap between sites may partly reflect which months each was counted in.\n- **Gap to second place:** Massachusetts Avenue is roughly twice the next site, so its lead is large, but the sample is still small.\n\nANSWER: 4588.75",
+   "repeat": 0
+  },
+  {
+   "id": "boston_peak_hour",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    17.0
+   ],
+   "got": 17.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 31861,
+   "output_tokens": 967,
+   "answer": "The 5 p.m. hour (hour 17) has the most bikes: 234,843 bikes summed across all Boston count locations, both directions, and all counted days. The 8 a.m. hour is second with 208,826.\n\nI used the hourly count table directly because no metric in the semantic layer breaks counts down by hour. Every hour is covered by the same 2,957 location-days, so the comparison is fair. Two caveats apply:\n\n- Each location is counted for only about two days, a few times a year, so this is a sampled total, not a full year of traffic. Seasonal mix and which locations were counted can shift the totals.\n- Hour 0 has one fewer row than the others (5,735 vs 5,738). This is negligible.\n\nThe result matches the usual commute pattern, with an evening peak slightly larger than the morning one.\n\nANSWER: 17",
+   "repeat": 0
+  },
+  {
+   "id": "boston_bike_crashes_2024",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    366.0
+   ],
+   "got": 366.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22341,
+   "output_tokens": 522,
+   "answer": "Boston's Vision Zero data records **366** crashes involving a person on a bike in 2024. The metric counts crashes with an EMS dispatch where the mode was bike, grouped by crash year.\n\nBefore relying on this number:\n- **EMS-based:** Only crashes that led to an ambulance dispatch are included. Crashes handled without an ambulance call are missing, so this is a floor, not a full count of bike crashes.\n- **Not comparable with NYC:** NYC crash counts come from police reports, so the two cities' figures measure different things.\n\nANSWER: 366",
+   "repeat": 0
+  },
+  {
+   "id": "bluebikes_trips_sep_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    555121.0
+   ],
+   "got": 555121.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22487,
+   "output_tokens": 696,
+   "answer": "September 2026 had **555,121** Bluebikes trips, from the `bluebikes_trips` metric grouped by month.\n\nThings to know before relying on it:\n- The metric only loads the latest 12 months of trips. September 2026 is well inside that window, so it isn't the partial earliest month the caveat warns about.\n- The count is trips started, so it isn't a count of riders or unique bikes.\n\nANSWER: 555121",
+   "repeat": 0
+  },
+  {
+   "id": "bluebikes_ebike_share_oct_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.4039290881639237
+   ],
+   "got": 0.4,
+   "correct": false,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 24075,
+   "output_tokens": 918,
+   "answer": "In October 2026, about 0.40 of Bluebikes trips were on electric bikes: 230,879 e-bike trips out of 571,583 total.\n\nThings to know before relying on this:\n- The metric's caveat says the e-bike share depends on how many e-bikes were in service, not only on rider choice.\n- Bluebikes trip data covers only the latest 12 months. October 2026 is the most recent month in the data, so the caveat about a partial earliest month doesn't apply here. I didn't separately check whether October 2026 is a complete month.\n- The share has been rising through the second half of 2026 (about 0.26 in June and July, 0.37 in September, 0.40 in October), so October is the high point of the year so far.\n\nANSWER: 0.40",
+   "repeat": 0
+  },
+  {
+   "id": "bluebikes_casual_minutes_jul_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    25.260724414136618
+   ],
+   "got": 25.26,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 4,
+   "input_tokens": 30291,
+   "output_tokens": 975,
+   "answer": "In July 2026, casual (non-member) Bluebikes riders averaged about **25.26 minutes** per trip.\n\nI took this from the `bluebikes_avg_trip_minutes` metric, grouped by month and member type. The metric is total trip minutes divided by trips with a recorded duration. Two things to keep in mind:\n\n- The only caveat on the metric is that trips across the November clock change are excluded. That doesn't affect July.\n- Casual riders take much longer trips than members. Members averaged about 13.9 minutes that month, so the casual figure is roughly 1.8 times as long.\n\nANSWER: 25.26",
+   "repeat": 0
+  },
+  {
+   "id": "nyc_protected_segments_2023",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    687.0
+   ],
+   "got": 687.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 15314,
+   "output_tokens": 393,
+   "answer": "In 2023, 687 NYC street segments got their first protected bike lane.\n\nThe `new_lane_segments` metric counts segments by install year, and 2023 is a full calendar year within its 2015 to October 2024 coverage. The metric has no caveats of its own. For context, the annual counts were 438 in 2022 and 214 in 2024 (partial, through October), so 2023 is the highest year in the series.\n\nANSWER: 687",
+   "repeat": 0
+  },
+  {
+   "id": "new_lane_change_all",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.17304492512479203
+   ],
+   "got": 0.17,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 18879,
+   "output_tokens": 861,
+   "answer": "The change is about **+0.17** (17%): cyclists hurt within about 50 m of new NYC protected lanes rose from 4,207 in the two years before installation to 4,935 in the two years after.\n\nThings to know before relying on it:\n\n- **Citywide trend was much smaller.** Over the same windows, all NYC cyclist injuries rose by about 0.02 (`citywide_injury_change`). The new-lane figure is about 0.15 above that baseline.\n- **Exposure isn't controlled.** Lanes tend to go where riding is already growing, and there is no per-street ridership count, so more riders could explain some or all of the increase.\n- **Pandemic windows.** Lanes installed in 2020 or later have after-windows that overlap the pandemic, when riding patterns changed.\n- **Uneven by install year.** Changes range from about \u22120.10 (2022 installs) to +0.49 (2020 installs). The 2020 and 2021 groups drive much of the total.\n- **Double counting.** A crash near several adjacent segments counts once per segment, so totals can be inflated.\n- **Small groups.** The figure covers 4,349 lane segments. Some boroughs have few prior injuries, which makes their percentages unstable.\n\nANSWER: 0.17",
+   "repeat": 0
+  },
+  {
+   "id": "new_lane_change_brooklyn",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.43501611170784105
+   ],
+   "got": 0.435,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 17570,
+   "output_tokens": 820,
+   "answer": "Brooklyn's cyclists hurt near new protected lanes rose by about 0.435 (43.5%) from the two years before to the two years after each lane's installation.\n\n- **Counts:** 931 cyclists hurt in the two years before, 1,336 in the two years after, across 843 Brooklyn street segments that got their first protected lane from 2015 through October 2024.\n- **Citywide comparison:** Over the same windows, citywide cyclist injuries rose by about 0.014, so the Brooklyn rise is far larger than the citywide trend. The gap between the two is about +0.42.\n- **Caveats:**\n  - The metric doesn't adjust for ridership. Lanes tend to go where riding is growing, so more riders after installation could explain some of the increase.\n  - Windows for 2020 installs overlap the pandemic, when riding patterns changed.\n  - A crash near several adjacent segments is counted once per segment.\n\nANSWER: 0.435",
+   "repeat": 0
+  },
+  {
+   "id": "citywide_change_same_windows",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.017483580955972328
+   ],
+   "got": 0.0175,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 15992,
+   "output_tokens": 928,
+   "answer": "The citywide change in cyclists hurt, over the same before and after windows used for the NYC protected lanes installed 2015 through October 2024, was about +0.017, a 1.7% increase.\n\n- **Before:** 42,938,858 cyclists hurt\n- **After:** 43,689,583 cyclists hurt\n- **Change:** (after \u2212 before) / before = 0.0175\n\nThings to know before relying on this:\n\n- The metric's own caveats are empty, but the windows are set per lane segment, from each segment's install date. The citywide totals are sums across those per-segment windows. If windows for different segments overlap, the same injury can be counted more than once, so treat the total as a sum of window counts rather than a clean citywide count.\n- The result is a sum across all segments, so the 42.9 million and 43.7 million totals are sums of window counts, not actual citywide injury totals for those years.\n\nANSWER: 0.0175",
+   "repeat": 0
+  },
+  {
+   "id": "nyc_cyclist_crashes_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4514.0
+   ],
+   "got": 4514.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12676,
+   "output_tokens": 1048,
+   "answer": "**4,514 crashes** in NYC in 2025 hurt at least one cyclist, based on `cyclists_hurt > 0` in `fct_nyc_crashes`.\n\n- The table has 85,559 distinct 2025 collisions with no duplicate IDs and no null `cyclists_hurt` values. Dates run from 2025-01-01 to 2025-12-31.\n- `cyclists_hurt` is defined as injured plus killed. I checked that it matches that sum on every 2025 row that has a cyclist casualty, and it does.\n- Of the 4,514 crashes, 4,504 had at least one cyclist injured and 10 had at least one cyclist killed. Some crashes may have both.\n- These are NYPD police reports. Some crashes have no location (about 11%) or no borough (about 29%). The count above includes those crashes because it is citywide and doesn't filter on location.\n- The NYPD data may still be revised or updated for recent months, so the total could shift slightly if the source is refreshed.\n\nANSWER: 4514",
+   "repeat": 1
+  },
+  {
+   "id": "nyc_cyclists_killed_2024",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    22.0
+   ],
+   "got": 22.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12401,
+   "output_tokens": 774,
+   "answer": "**22 cyclists were killed in NYC crashes in 2024.**\n\nI summed `cyclists_killed` in `iceberg.marts.fct_nyc_crashes` for crashes dated 2024. The data covers the full year, from 2024-01-01 to 2024-12-31, across 91,316 collisions. Each collision ID appears once and no rows have a null cyclist-fatality count, so the total isn't inflated or undercounted by duplicates or missing values.\n\nCaveats:\n- These are NYPD collision reports, not medical or death-certificate records, so deaths that occurred later or were classified differently may not be reflected.\n- About 29% of crashes have no borough recorded and 11% have no location. The total includes those crashes, but I can't say where the unlocated deaths happened.\n- For comparison, the same table gives 31 cyclist deaths in 2023 and 10 in 2025 (partial-year data is not checked here).\n\nANSWER: 22",
+   "repeat": 1
+  },
+  {
+   "id": "nyc_cyclists_injured_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4114.0
+   ],
+   "got": 4114.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12577,
+   "output_tokens": 781,
+   "answer": "**4,114 cyclists were injured in NYC crashes in 2026**, based on NYPD crash reports from January 1 through November 3, 2026.\n\nThe data is not a full year: November is only partial, and the 2026 total is through November 3. The monthly counts rise from about 130 to 570 a month in spring and summer, so the total will grow as the year finishes. Five cyclists were killed in the same period, which is counted separately and not included in the 4,114. The `cyclists_hurt` column (injured plus killed) would give 4,119. The table doesn't flag missing values in the injury columns, and about 11% of crashes lack a location, but neither affects this count.\n\nANSWER: 4114",
+   "repeat": 1
+  },
+  {
+   "id": "nyc_top_borough_cyclist_crashes_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    1542.0
+   ],
+   "got": 1542.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12413,
+   "output_tokens": 937,
+   "answer": "**Manhattan** had the most crashes that hurt a cyclist in 2025, with **1,542**.\n\nThe counts are crashes with at least one cyclist injured or killed (`cyclists_hurt > 0`), using NYPD collision reports for calendar 2025. The data runs through December 31, 2025.\n\nBefore relying on this:\n- **Missing boroughs:** 124 cyclist-hurt crashes in 2025 have no borough recorded, so they aren't in any borough's count. The next-highest borough, Brooklyn, had 1,452, a gap of 90. If the unassigned crashes were mostly in Brooklyn, the ranking could change, so the lead is not certain.\n- **Full picture for 2025:** Manhattan 1,542, Brooklyn 1,452, Queens 883, Bronx 461, Staten Island 52, no borough 124. The total is 4,514.\n- **Counts are crashes, not people:** one crash can injure several cyclists, so this counts collisions, not cyclists hurt.\n\nANSWER: 1542",
+   "repeat": 1
+  },
+  {
+   "id": "nyc_pedestrians_killed_2023",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    107.0
+   ],
+   "got": 107.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12134,
+   "output_tokens": 656,
+   "answer": "NYC's crash table shows **107 pedestrians killed in 2023**.\n\nI ran the count two ways, filtering on `crash_year` and on the year of `crash_date`, and both returned 96,608 crashes and 107 pedestrian deaths. `pedestrians_killed` has no nulls in that year, so the sum isn't undercounting missing values.\n\nThe figure comes from NYPD crash reports, one row per collision. It is a police-report count, so it may not match figures from other sources, such as city Vision Zero reports or the medical examiner, which can differ in timing and definitions. I didn't check it against those sources.\n\nANSWER: 107",
+   "repeat": 1
+  },
+  {
+   "id": "nyc_no_borough_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    7100.0
+   ],
+   "got": 7100.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 17858,
+   "output_tokens": 596,
+   "answer": "There are 7,100 NYC crashes in 2025 with no borough recorded, out of 85,559 crashes that year (about 8%).\n\nI filtered on `crash_year = 2025` and got the same counts when filtering on the year of `crash_date`. Blank-string boroughs add no extra rows. The table notes that NYPD sometimes doesn't record a borough, so these are null values in the source, not a data-pipeline artifact. The table-level note says about 29% of all crashes lack a borough, which is a multi-year figure. The 2025 share here is lower, so the 2025 rate is not the same as the overall one.\n\nANSWER: 7100",
+   "repeat": 1
+  },
+  {
+   "id": "washington_st_summer_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    546.5
+   ],
+   "got": 546.5,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 19549,
+   "output_tokens": 752,
+   "answer": "The average is **546.5 bikes per day**, from the two summer 2025 count days at this location.\n\n- **Count days:** June 11 (552 bikes) and June 12 (541 bikes), 2025, both labeled \"Summer\" in the Boston count table.\n- **Location:** Washington Street north of Bexley Road (location_id 60), matched by name.\n- **Caveats:** Each location is counted for only about two days per season, so this is a two-day sample, not a full-summer average. The summer 2026 counts (June 9\u201310, 2026) fall outside the requested period and are excluded. The figure is a 24-hour count in both directions.\n\nANSWER: 546.5",
+   "repeat": 1
+  },
+  {
+   "id": "boston_avg_bikes_summer_2024",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    652.4125
+   ],
+   "got": 652.41,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 20200,
+   "output_tokens": 1030,
+   "answer": "**Answer: about 652 bikes per count day** (652.4125 across 160 location-days in summer 2024).\n\n- **Source:** `fct_boston_bike_counts_daily`, filtered to `season = 'Summer'` and `count_year = 2024`. Each row is one location on one count day, and `bikes` is the 24-hour two-direction count.\n- **Coverage:** 83 locations were counted, on dates from 2024-06-11 to 2024-07-10. Each location was counted for about two days, so this is a snapshot of the season, not a full summer of data.\n- **Weighting:** The average is across location-days, not locations. Each location contributes about two days, so the number is a simple average over those rows. Counts vary widely by site: the busiest locations exceed 2,000 bikes a day and the quietest are in the tens. The average therefore reflects the mix of sites that happened to be counted, so it shouldn't be read as a typical single street.\n- **Comparison:** Don't compare this to other seasons' averages without the same site mix. The table's own note says to compare the same season across years. For reference, 2024 spring averaged 694 and fall 725, but those seasons were counted at different sites.\n\nANSWER: 652.41",
+   "repeat": 1
+  },
+  {
+   "id": "boston_bike_share_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.04453249276536297
+   ],
+   "got": 0.0445,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 13103,
+   "output_tokens": 1186,
+   "answer": "In Boston's 2025 counts, bikes were about 0.0445 of all counted traffic (bikes plus motor vehicles).\n\n- **Totals:** 303,464 bikes and 6,510,976 motor vehicles across 438 location-days, from 91 locations counted between 2025-03-11 and 2025-12-10. There are no null counts.\n- **Caveats:** Each location is counted only about two days per season, so the yearly total depends on which locations and seasons were sampled. The 2025 sample has more fall counts (182 location-days) and fewer summer counts (110) than the 2024 sample, so the seasonal mix differs between years.\n- **Season comparison:** Bike share was 0.032 in winter, 0.045 in spring, 0.048 in summer and 0.047 in fall. Within each season, 2025 is close to or above 2024, except winter, which was lower (0.032 vs 0.039). Comparing like seasons is more reliable than comparing the raw annual totals.\n- **Measure:** This is a 24-hour count in both directions, from the daily table's `bike_share` definition, bikes / (bikes + vehicles).\n\nANSWER: 0.0445",
+   "repeat": 1
+  },
+  {
+   "id": "boston_locations_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    48.0
+   ],
+   "got": 48.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12318,
+   "output_tokens": 631,
+   "answer": "**48** Boston bike count locations were counted in 2026.\n\nI checked this three ways: the daily count table filtered on `count_year = 2026`, the same table filtered on the year of `count_date`, and the hourly count table filtered on the year of `count_date`. All three give 48. The 2026 rows cover 136 location-days, from March 10 to September 17, 2026. The year field matches the count date on every row.\n\nCaveat: counts are short, roughly two days per location per season, so 2026 is only partway through its counting season. The total could still rise as more locations are counted later in the year.\n\nANSWER: 48",
+   "repeat": 1
+  },
+  {
+   "id": "boston_top_location_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4588.75
+   ],
+   "got": 4588.75,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 21946,
+   "output_tokens": 989,
+   "answer": "The top location is **Massachusetts Avenue north of Back Street** (location_id 44), with an average of **4,588.75 bikes per count day** in 2025.\n\nThings to know before relying on this number:\n\n- **Each location has a different number of count days.** This one has 8 days in 2025, spread across spring, summer, fall, and winter. Other locations have only 2 or 4 days, sometimes all in one season, so their averages are not directly comparable.\n- **Seasons matter.** Bike volume here moves a lot with the season. Its winter counts (about 2,900) are roughly half its fall counts (about 5,900). A location counted only in fall would look higher than one counted in winter.\n- **The daily values look consistent.** For location 44 there are no missing values, and the eight dates have plausible weather and bike-share figures.\n- **The count is a 24-hour, two-direction total** from BTD automated counters.\n\nANSWER: 4588.75",
+   "repeat": 1
+  },
+  {
+   "id": "boston_peak_hour",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    17.0
+   ],
+   "got": 17.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 12475,
+   "output_tokens": 686,
+   "answer": "Across all Boston hourly counts, the busiest hour is **17:00\u201317:59 local time**, with 234,843 bikes counted.\n\n- **Source:** `fct_boston_bike_counts_hourly`, summed over all locations, dates, and both directions.\n- **Coverage:** Every hour has the same row count (about 5,738) across 91 locations, so no hour is favored by more data.\n- **Runner-up:** 8:00 (208,826), so the morning and evening commute peaks are the two largest.\n- **Caveat:** Each location is counted for only about two days per season, so these totals reflect the sampled days, not a full year. The ranking shows where bike volume concentrates in the counts, not a precise typical-day figure.\n\nANSWER: 17",
+   "repeat": 1
+  },
+  {
+   "id": "boston_bike_crashes_2024",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    366.0
+   ],
+   "got": 366.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12195,
+   "output_tokens": 587,
+   "answer": "Boston's Vision Zero data records **366** crashes involving a person on a bike in 2024.\n\nI counted rows in `fct_boston_crashes` where `crash_date` falls in 2024 and `mode` is \"bike.\" There are 366 rows with 366 distinct crash IDs, so no duplicates. Dates run from 2024-01-02 to 2024-12-28. The other modes in 2024 were 2,627 motor vehicle and 465 pedestrian crashes.\n\nBefore relying on this number, note that the table is built from EMS dispatch calls, so crashes that never led to an ambulance call are missing. It is a floor on bike crashes, not a full count. It also isn't directly comparable with NYC's police-report data.\n\nANSWER: 366",
+   "repeat": 1
+  },
+  {
+   "id": "bluebikes_trips_sep_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    555121.0
+   ],
+   "got": 555121.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12484,
+   "output_tokens": 688,
+   "answer": "Bluebikes recorded **555,121 trips** in September 2026, from the `fct_bluebikes_trips_daily` table.\n\nThe data covers all 30 days of September (2026-09-01 through 2026-09-30), so the month is complete. The total sums `trips` across all start stations, member types, and bike types. The table notes that e-bike trips starting away from a station have a null station ID, but those rows still carry trip counts and are included in this total. The table's trip counts don't depend on the duration field, which excludes trips across the November clock change, so that caveat doesn't affect this September count.\n\nANSWER: 555121",
+   "repeat": 1
+  },
+  {
+   "id": "bluebikes_ebike_share_oct_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.4039290881639237
+   ],
+   "got": 0.4,
+   "correct": false,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 4,
+   "input_tokens": 19649,
+   "output_tokens": 1131,
+   "answer": "About 0.40 of October 2026 Bluebikes trips were on electric bikes.\n\nIn `fct_bluebikes_trips_daily`, October 1\u201331, 2026 has 230,879 electric-bike trips and 340,704 classic-bike trips, for 571,583 total. That gives 230,879 / 571,583 \u2248 0.404.\n\nThings to know before relying on this:\n- The table has only two bike types in this period (`classic_bike` and `electric_bike`), so the denominator is complete for those categories.\n- No October rows have a null start station, so the e-bike trips that the schema note says start away from a station are not missing from the totals.\n- The count covers all 31 days of October, with no gaps.\n\nANSWER: 0.40",
+   "repeat": 1
+  },
+  {
+   "id": "bluebikes_casual_minutes_jul_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    25.260724414136618
+   ],
+   "got": 25.26,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 12402,
+   "output_tokens": 962,
+   "answer": "The average casual (non-member) Bluebikes trip in July 2026 was about 25.26 minutes, combining classic and electric bikes.\n\n- **Source:** `fct_bluebikes_trips_daily`, filtered to `member_type = 'casual'` and dates 2026-07-01 through 2026-07-31. All July dates are present.\n- **Method:** total trip minutes divided by trips with a usable duration, so the average is weighted by trip count rather than an average of daily averages.\n- **Totals:** 184,770 casual trips with duration (144,160 classic, 40,610 electric), totalling about 4,667,424 minutes.\n- **By bike type:** classic bikes averaged about 26.86 minutes and electric bikes about 19.58. The blended figure is pulled toward classic because they make up most of the trips.\n- **Caveats:** The mart excludes trips across the November clock change, which doesn't affect July. Durations are local times. I did not separately check for extreme outliers, such as bikes left undocked for hours, which could inflate the mean. A median would be more robust to those if you need one.\n\nANSWER: 25.26",
+   "repeat": 1
+  },
+  {
+   "id": "nyc_protected_segments_2023",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    687.0
+   ],
+   "got": 687.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 13635,
+   "output_tokens": 1019,
+   "answer": "**687 NYC street segments** had their first protected bike lane installed in 2023, according to `dim_nyc_protected_lanes`.\n\n- **Method:** I counted segments whose `install_year` is 2023. Each segment appears once with its first install date, and a second check using `installed_on` gave the same 687.\n- **Current status:** 685 of the 687 still have a current bike facility record. The other 2 have been removed since installation, but they still count as \"ever had\" a protected lane.\n- **Caveat on the data:** The table covers segments that have *ever* had a protected lane, and its install dates go back to 1894. Many of those early dates look like legacy or loosely defined facilities, so \"protected\" may be broader than a modern physical separation. Counts for 2023 are plausible, but the older rows should not be read as strictly comparable.\n- **Context:** 2023 is the highest year in the table, ahead of 2020 (512) and 2024 (566).\n\nANSWER: 687",
+   "repeat": 1
+  },
+  {
+   "id": "new_lane_change_all",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.17304492512479203
+   ],
+   "got": 0.17,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 13215,
+   "output_tokens": 1141,
+   "answer": "Across the 4,349 NYC protected-lane segments installed 2015 through October 2024, cyclists hurt within about 50 m rose from 4,207 in the two years before installation to 4,935 in the two years after. That is a change of +728, or about +0.17 of the before count (4,935 / 4,207 \u2212 1 \u2248 0.173).\n\nThings to know before relying on this:\n\n- **No comparison group.** The table has no control segments, and citywide cyclist injuries also moved over the same windows. The raw rise cannot be attributed to the lanes.\n- **Per-year results are uneven.** Segments installed in 2016 and 2020 show large increases in the after-period, while 2015 and 2022 show decreases. The total is driven by a few install years with small counts.\n- **Adjacent segments double-count.** A crash near adjacent segments counts once for each segment, so the totals can overstate the number of distinct crashes.\n- **Windows differ by segment.** Each segment's before and after windows depend on its install date, and the 2024 installs have only a few months of after-data. The citywide columns use the same per-segment windows, so summing them across segments is not a clean city-level baseline.\n\nANSWER: 0.17",
+   "repeat": 1
+  },
+  {
+   "id": "new_lane_change_brooklyn",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.43501611170784105
+   ],
+   "got": 0.435,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 12547,
+   "output_tokens": 1622,
+   "answer": "For Brooklyn, cyclists hurt nearby rose from 931 in the two years before protected-lane installation to 1,336 in the two years after. That is a fractional change of (1336 \u2212 931) / 931 \u2248 0.435.\n\nThe figures come from `fct_nyc_new_lane_safety`, which covers 843 Brooklyn segments installed 2015 through October 2024. Each segment's before and after windows are set by its own install date, and crashes count within about 50 m of the segment.\n\nThings to know before relying on this:\n- **Adjacent segments double-count.** A crash near two segments counts once for each, so the totals overstate distinct crashes.\n- **The citywide columns can't be summed this way.** Each segment row carries a citywide cyclist-injury figure, so summing across 843 rows gives inflated totals (about 8.4 million). The citywide change I'd report is roughly +1.4% for Brooklyn, but that needs a check against the source before use.\n- **No exposure adjustment.** Rising cyclist counts may reflect more riding, not only lane safety, and the table has no ridership control.\n- **Small counts.** The totals are in the hundreds, so a few crashes move the ratio a lot.\n- **Scope.** The table includes segments that have since lost their current facility record (`is_current` is not filtered here).\n\nANSWER: 0.435",
+   "repeat": 1
+  },
+  {
+   "id": "citywide_change_same_windows",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.017483580955972328
+   ],
+   "got": 0.017,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 5,
+   "input_tokens": 44549,
+   "output_tokens": 2583,
+   "answer": "The citywide cyclists-hurt change across the protected-lane install windows is about +1.7% (0.017), a small increase.\n\n- **Source:** `fct_nyc_new_lane_safety` has citywide cyclists-hurt counts for each segment's before and after windows. Each segment's window is set by its own install date, so the windows differ across segments.\n- **Deduplication:** Many segments share an install date and therefore an identical citywide pair. I kept one row per distinct install date, which gives 254 windows. Summing over all 4,349 segment rows would count the same citywide totals many times.\n- **Result:** Pooled over the 254 windows, the average before is about 9,902 and the average after about 10,069, a change of 0.0168. Weighting each segment row instead gives 0.0175, so the answer is about 0.017 either way.\n- **Caveats:**\n  - This is a simple before/after comparison of citywide totals, not a causal estimate. Citywide injuries move for many reasons, and I did not adjust for them.\n  - The windows fall in different years for different segments, so they may include pandemic-era years. I did not check this.\n  - The table covers only cyclists injured or killed in NYPD-reported crashes.\n\nANSWER: 0.017",
+   "repeat": 1
+  },
+  {
+   "id": "nyc_cyclist_crashes_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4514.0
+   ],
+   "got": 4514.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22379,
+   "output_tokens": 662,
+   "answer": "In 2025, NYPD reported **4,514** crashes in NYC that injured or killed at least one cyclist.\n\n- **Source:** the `nyc_cyclist_injury_crashes` metric, which counts crashes with at least one cyclist injured or killed, grouped by crash year.\n- **Full year:** 2025 is a complete year. The \"current year is partial\" caveat applies to 2026, which also appears in the data.\n- **Scope:** this is the citywide total. The roughly 29% of crashes with no borough are still included, so this figure is not affected by that caveat.\n- **Comparability:** these counts come from police reports and do not adjust for how many people ride. Ridership has grown, so the count alone does not show whether cycling got safer or riskier.\n\nANSWER: 4514",
+   "repeat": 1
+  },
+  {
+   "id": "nyc_cyclists_killed_2024",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    22.0
+   ],
+   "got": 22.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22250,
+   "output_tokens": 645,
+   "answer": "**22 cyclists were killed in NYC crashes in 2024**, according to the `nyc_cyclists_killed` metric, which sums the cyclists-killed field across NYPD-reported crashes.\n\nThe data has a few caveats:\n- The metric is built from police reports, so it is not directly comparable with Boston's EMS-based crash counts.\n- The metric's caveat says the current year is partial. The data also includes 2025 and 2026 rows, so 2024 should be a complete year, but I did not check the source for its exact cutoff.\n- I counted all boroughs. About 29% of NYC crashes have no borough recorded, which matters only if you break the number down by borough.\n\nFor context, the yearly totals were 31 in 2019, 29 in 2020, 19 in 2021, 19 in 2022, and 31 in 2023.\n\nANSWER: 22",
+   "repeat": 1
+  },
+  {
+   "id": "nyc_cyclists_injured_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4114.0
+   ],
+   "got": 4114.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 4,
+   "input_tokens": 30131,
+   "output_tokens": 935,
+   "answer": "NYC police reports show **4,114 cyclists injured in 2026** so far.\n\nBefore relying on this number:\n- **The year is partial.** The data runs from January 1 to November 3, 2026, so the total covers about ten months. For comparison, the full-year 2025 total was 4,574.\n- **Counts are police-reported.** The metric counts people injured in NYPD-reported crashes. Boston's figures come from EMS dispatches, so the two cities' counts are not directly comparable.\n- **About 29% of crashes have no borough recorded.** This doesn't affect the citywide total, but borough breakdowns will miss many crashes.\n- **Raw counts ignore ridership growth.** More people riding would push counts up even if the risk per rider stayed flat.\n\nANSWER: 4114",
+   "repeat": 1
+  },
+  {
+   "id": "nyc_top_borough_cyclist_crashes_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    1542.0
+   ],
+   "got": 1542.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 4,
+   "input_tokens": 32202,
+   "output_tokens": 1040,
+   "answer": "**Manhattan** had the most NYC crashes that hurt a cyclist in 2025, with **1,542**. Brooklyn was second with 1,452.\n\nThings to know before relying on this:\n- **Missing borough:** 124 crashes from 2025 have no borough and are not in any borough count. Those could change the ranking if they were mostly in Brooklyn, though the Manhattan lead is 90 crashes.\n- **Source:** These are NYPD police-reported crashes, so they can't be compared directly with Boston's EMS-based counts.\n- **Ridership:** Counts don't adjust for how many people ride in each borough.\n- **Year:** 2025 is a complete year in the data. The partial year is 2026, which is not part of this answer.\n\nI first tried filtering the metric by year, but the query failed. I grouped by year and borough instead and read off the 2025 rows.\n\nANSWER: 1542",
+   "repeat": 1
+  },
+  {
+   "id": "nyc_pedestrians_killed_2023",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    107.0
+   ],
+   "got": 107.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22249,
+   "output_tokens": 461,
+   "answer": "In the semantic layer, NYC pedestrians killed in 2023 totals **107**.\n\nThe metric has no caveats of its own. 2023 is a complete year; the partial-year caveat applies to 2026, the most recent year in the data. The count comes from NYPD police reports, so it may not match EMS-based figures from other sources. The metric is also not restricted by borough, so this is the citywide total.\n\nANSWER: 107",
+   "repeat": 1
+  },
+  {
+   "id": "nyc_no_borough_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    7100.0
+   ],
+   "got": 7100.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 24708,
+   "output_tokens": 786,
+   "answer": "In 2025, **7,100** NYC crashes have no borough recorded.\n\nI got this from the `nyc_crashes` metric grouped by year and borough. My attempt to filter directly to 2025 returned an error, so I read the 2025 rows from the full grouped result.\n\n- The 2025 borough rows sum to 85,559 crashes, so the missing-borough share for 2025 is about 0.08.\n- The metric's caveat says about 29% of crashes lack a borough. That figure is across all years. Missing borough was much more common in earlier years (for example, 2017 had 88,052 with no borough), so 2025 is not representative of the 29% figure.\n- 2025 is a complete year. The partial year is 2026, which is not part of this answer.\n- Crashes with no borough are left out of every borough breakdown, so any borough comparison for 2025 covers about 92% of crashes.\n\nANSWER: 7100",
+   "repeat": 1
+  },
+  {
+   "id": "washington_st_summer_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    546.5
+   ],
+   "got": 546.5,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 18234,
+   "output_tokens": 556,
+   "answer": "On Washington Street north of Bexley Road in Roslindale, the summer 2025 average was **546.5 bikes per count day**, based on 2 count days.\n\nThings to know before relying on this number:\n- **Small sample:** The location was counted on only two days in summer 2025. The city counts each location for about two days a few times a year, so a couple of unusual days can shift the average a lot.\n- **Season comparison:** Summer figures are best compared with other summers. Since 2020 the city also counts in winter and spring, which pulls all-season averages down.\n- **Source:** Counts come from the city's Boston bike count data, aggregated through the semantic layer's per-day average metric.\n\nANSWER: 546.5",
+   "repeat": 1
+  },
+  {
+   "id": "boston_avg_bikes_summer_2024",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    652.4125
+   ],
+   "got": 652.41,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 15874,
+   "output_tokens": 620,
+   "answer": "In summer 2024, Boston's bike counts averaged about **652 bikes per location per count day**.\n\n- **Sample size:** 160 location-days, from 104,386 bikes counted. The metric's caveats say each location is counted for only about two days a few times a year, so small samples move a lot.\n- **Check:** 104,386 \u00f7 160 = 652.4, which matches the metric's average.\n- **Comparisons:** Use the same season across years. Since 2020 the City also counts in winter and spring, which lowers all-season averages. I did not compare against other years.\n\nANSWER: 652.41",
+   "repeat": 1
+  },
+  {
+   "id": "boston_bike_share_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.04453249276536297
+   ],
+   "got": 0.0445,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 16648,
+   "output_tokens": 706,
+   "answer": "In Boston's 2025 counts, bikes were about **0.045** of all counted traffic (bikes plus motor vehicles): 303,464 bikes out of 6,814,440 total, across 438 location-days.\n\nBefore relying on this number:\n\n- **Sample-based:** Each location is counted for about two days, a few times a year, so this is a sample, not a full-year total. The share also depends on which locations and seasons were counted. Since 2020 the City counts in winter and spring too, so the 2025 figure reflects that mix.\n- **Year-over-year trend:** The share rose from about 0.03 in 2016\u20132018 to about 0.04\u20130.045 in 2022\u20132025. Only 2025 is shown here, so treat the trend as indicative.\n- **Not a crash or ridership rate:** It is a share of counted traffic, not of trips or people.\n\nANSWER: 0.0445",
+   "repeat": 1
+  },
+  {
+   "id": "boston_locations_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    48.0
+   ],
+   "got": 48.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 16671,
+   "output_tokens": 1478,
+   "answer": "Boston counted **48 different locations** in 2026.\n\nI grouped the `boston_count_days` metric by location name, filtered to count year 2026, and got 48 distinct location names. Each location has 2, 4, or 6 counted days in 2026, so every one of the 48 was counted at least once. The count is by name, so it assumes each name is a unique site.\n\nCaveat: Boston counts are a few days per location, a few times a year, so 2026 is only partly through the count cycle. The total may rise as more counts are loaded.\n\nANSWER: 48",
+   "repeat": 1
+  },
+  {
+   "id": "boston_top_location_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4588.75
+   ],
+   "got": 4588.75,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 25773,
+   "output_tokens": 893,
+   "answer": "The Boston count location with the highest average bikes per count day in 2025 was **Massachusetts Avenue north of Back Street**, at about **4,588.75 bikes per count day**, across 8 count days.\n\nThings to know before relying on this number:\n\n- **Sample size:** Each location is counted only about two days a few times a year. This site's 8 count days are a reasonable base, but the average still moves with which days and seasons were sampled.\n- **Outlier:** It is well above the next location, BU Bridge north of Commonwealth Avenue, at 2,184.5 over 6 days. Its lead is large, not a near tie.\n- **Seasonal mix:** Since 2020 the City also counts in winter and spring, which lowers all-season averages. Comparisons across locations with different seasonal coverage are less reliable.\n\nANSWER: 4588.75",
+   "repeat": 1
+  },
+  {
+   "id": "boston_peak_hour",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    17.0
+   ],
+   "got": 17.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 31936,
+   "output_tokens": 930,
+   "answer": "The busiest hour across all of Boston's hourly bike counts is **17:00\u201317:59 local time**, with 234,843 bikes summed over all counted hours.\n\n- **Coverage:** The hourly table covers 91 locations and 147 count days, and every hour has the same 5,738 rows. The comparison is fair across hours, but these are short counts taken a few days at a time, not a full year of data.\n- **Seasonality:** Counts come from different seasons and years, and the City has counted in winter and spring only since 2020. This affects totals but applies to every hour alike, so it doesn't change which hour ranks first.\n- **Close second:** The 8:00 hour (208,826) is nearly as high, so the evening and morning commute peaks are both strong.\n- **Totals, not averages:** These are sums over the sample, not per-day averages. The metric layer has no hour-of-day breakdown for Boston counts, so I used the hourly table directly.\n\nANSWER: 17",
+   "repeat": 1
+  },
+  {
+   "id": "boston_bike_crashes_2024",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    366.0
+   ],
+   "got": 366.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22341,
+   "output_tokens": 464,
+   "answer": "Boston's Vision Zero data records **366** crashes involving a person on a bike in 2024.\n\nThe figure comes from the `boston_bike_crashes` metric, filtered to the bike mode and grouped by crash year. Two caveats apply. The count is based on EMS dispatches, so crashes with no ambulance call are not included and the true total is likely higher. It also isn't directly comparable with NYC figures, which come from police reports.\n\nANSWER: 366",
+   "repeat": 1
+  },
+  {
+   "id": "bluebikes_trips_sep_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    555121.0
+   ],
+   "got": 555121.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 15413,
+   "output_tokens": 435,
+   "answer": "Bluebikes recorded **555,121 trips** starting in September 2026.\n\nThis comes from the `bluebikes_trips` metric, which counts trips started. The metric only loads the latest 12 months of trips. The partial-month caveat applies to the earliest month (October 2025, with just 120 trips), not to September 2026, so this figure is not affected by it. The data also runs through October 2026, so September appears complete.\n\nANSWER: 555121",
+   "repeat": 1
+  },
+  {
+   "id": "bluebikes_ebike_share_oct_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.4039290881639237
+   ],
+   "got": 0.4,
+   "correct": false,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 24079,
+   "output_tokens": 881,
+   "answer": "Bluebikes e-bikes were about 40% of October 2026 trips: 230,879 e-bike trips out of 571,583 total.\n\nThe metric is `bluebikes_ebike_share`, which the semantic layer computes as e-bike trips divided by all trips. Its caveat is that the share \"depends on how many e-bikes were in service, not only on rider choice,\" so it can move with fleet availability as well as with rider preference. I did not check whether October 2026 is a complete month in the data.\n\nANSWER: 0.40",
+   "repeat": 1
+  },
+  {
+   "id": "bluebikes_casual_minutes_jul_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    25.260724414136618
+   ],
+   "got": 25.26,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22774,
+   "output_tokens": 629,
+   "answer": "In July 2026, casual (non-member) Bluebikes riders averaged about **25.26 minutes** per trip. For comparison, members averaged about 13.9 minutes that month.\n\nThe figure is total trip minutes divided by the number of trips with a recorded duration. Trips across the November clock change are excluded, which doesn't affect July. The data covers only the latest 12 months, and July 2026 is well inside that window, so it isn't the partial edge month.\n\nANSWER: 25.26",
+   "repeat": 1
+  },
+  {
+   "id": "nyc_protected_segments_2023",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    687.0
+   ],
+   "got": 687.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 15286,
+   "output_tokens": 442,
+   "answer": "**687** NYC street segments got their first protected bike lane in 2023.\n\nThe `new_lane_segments` metric counts street segments that got their first protected lane, grouped by install year. The metric has no caveats of its own. Its underlying table has one row per segment install, so I counted rows rather than checking for duplicate segments. For context, the yearly counts were 438 in 2022 and 214 in 2024, which runs through October only. The 2023 figure is therefore a high point, not an artifact of a partial year.\n\nANSWER: 687",
+   "repeat": 1
+  },
+  {
+   "id": "new_lane_change_all",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.17304492512479203
+   ],
+   "got": 0.17,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 16837,
+   "output_tokens": 720,
+   "answer": "From the semantic layer, cyclists hurt within about 50 m of NYC protected lanes installed 2015 through October 2024 rose from 4,207 in the two years before installation to 4,935 in the two years after. That is a change of (4,935 \u2212 4,207) / 4,207 = 0.17 (0.173 unrounded), across 4,349 lane segments.\n\nBefore relying on this number:\n- **Citywide comparison:** Citywide cyclist injuries over the same windows rose by about 0.02 (0.017). Net of that, the new-lane figure is roughly +0.16 higher than citywide.\n- **No exposure adjustment:** Lanes tend to go where riding is already growing, and there are no per-street ridership counts, so more riders could explain some of the rise.\n- **Pandemic effect:** Windows for lanes installed after 2020 overlap the pandemic, when riding patterns changed.\n- **Double counting:** A crash near several adjacent segments counts once per segment.\n\nANSWER: 0.17",
+   "repeat": 1
+  },
+  {
+   "id": "new_lane_change_brooklyn",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.43501611170784105
+   ],
+   "got": 0.435,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 17823,
+   "output_tokens": 948,
+   "answer": "For Brooklyn, cyclists hurt within about 50 m of new protected lanes rose from 931 in the two years before installation to 1,336 in the two years after. That is a change of **+0.435** (405 / 931), or about +43.5%.\n\nThings to know before relying on it:\n\n- **Citywide comparison:** Over the same windows, all NYC cyclist injuries rose by about 0.014 (+1.4%). The Brooklyn figure is roughly 0.42 higher than citywide, so most of the rise is not explained by a citywide trend.\n- **Exposure is not controlled:** Lanes tend to go where riding is already growing. More riders after a lane opens would mean more injuries even if the lane were safe. The data has no per-street ridership counts to adjust for this.\n- **Pandemic effects:** Windows for lanes installed after 2020 overlap the pandemic, when riding patterns changed.\n- **Overlap:** A crash near several adjacent segments counts once per segment.\n- **Sample:** The data covers 843 Brooklyn segments. The counts are large enough that the percentage isn't inflated by small numbers, but the change is still an observational before-and-after comparison, not evidence that the lanes caused the increase.\n- **Source:** These are NYPD police-reported injuries.\n\nI did not have the earlier question you're comparing against, so I took \"same question\" to mean the same measure: the change in cyclists hurt near new lanes, two years before versus two years after.\n\nANSWER: 0.435",
+   "repeat": 1
+  },
+  {
+   "id": "citywide_change_same_windows",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.017483580955972328
+   ],
+   "got": 0.0168,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 5,
+   "input_tokens": 40956,
+   "output_tokens": 2258,
+   "answer": "The citywide change is about **0.017** (roughly +1.7%), but the metric's headline figure, 0.0175, is inflated, so I'm reporting the corrected value.\n\n- **Why the metric is off:** `citywide_injury_change` sums the citywide before and after counts over every lane-segment row. The fact table repeats each window's citywide count once per segment, so windows with more segments get more weight. The summed totals (about 42.9M before) are far larger than any real citywide count, which is roughly 8,000 to 10,000 per window.\n- **Corrected calculation:** I kept one row per install date, giving 254 windows and 254 distinct dates. Citywide cyclists hurt were 2,515,211 before and 2,557,571 after. The change is (2,557,571 \u2212 2,515,211) / 2,515,211 \u2248 0.0168.\n- **Caveats:** Citywide injuries are police-reported and the current year is partial. The windows overlap and cover different years, including the pandemic period for 2020 installs, so this is a pooled figure across install dates rather than a single time period. The change also varies a lot by install year, from about \u22120.08 for 2024 to +0.21 for 2015.\n\nANSWER: 0.0168",
+   "repeat": 1
+  },
+  {
+   "id": "nyc_cyclist_crashes_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4514.0
+   ],
+   "got": 4514.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12405,
+   "output_tokens": 851,
+   "answer": "**4,514 crashes** in NYC in 2025 hurt at least one cyclist.\n\nI counted rows in `fct_nyc_crashes` with `crash_year = 2025` and `cyclists_hurt >= 1`. The table has one row per collision, with no duplicate IDs, and 2025 dates run from January 1 to December 31. `cyclists_hurt` has no nulls. Those 4,514 crashes account for 4,574 cyclists injured and 10 killed, so \"hurt\" here includes deaths.\n\nThings to know before relying on this:\n- The source is NYPD collision reports, not hospital or EMS records, so minor injuries may be underreported.\n- About 11% of NYC crashes have no location and 29% have no borough. This count includes them, since it doesn't filter by geography.\n- Recent NYPD records can be revised after first publication, so the 2025 total may change slightly in later pulls.\n\nANSWER: 4514",
+   "repeat": 2
+  },
+  {
+   "id": "nyc_cyclists_killed_2024",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    22.0
+   ],
+   "got": 22.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12401,
+   "output_tokens": 798,
+   "answer": "**22 cyclists were killed in NYC crashes in 2024.**\n\nI summed `cyclists_killed` in `iceberg.marts.fct_nyc_crashes` for crashes dated 2024. The table covers 91,316 collisions from 2024-01-01 through 2024-12-31, with no null kill counts and no duplicate collision IDs, so the sum is complete for the year.\n\nThings to know before relying on this:\n- The source is NYPD collision reports. About 11% of crashes have no location and 29% have no borough, but the killed count doesn't depend on those fields, so the total isn't affected by them.\n- The total is a count of people killed, not crashes. Those are the same only if each fatal crash involved one cyclist.\n- For comparison, the same table gives 31 for 2023 and 10 for 2025 (partial year, data through 2025-12-31 in the table). Year-to-year counts this small move a lot with a few incidents, so I wouldn't read much into the change from 31 to 22.\n\nANSWER: 22",
+   "repeat": 2
+  },
+  {
+   "id": "nyc_cyclists_injured_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4114.0
+   ],
+   "got": 4114.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12430,
+   "output_tokens": 956,
+   "answer": "**4,114 cyclists were injured in NYC crashes in 2026**, counting crash dates from January 1 through November 3, 2026 (the latest date in the table).\n\n- **Source:** NYPD crash reports in `fct_nyc_crashes`, using the `cyclists_injured` column. The table also has `cyclists_hurt` (4,119), which adds 5 cyclists killed. I used injured only, since that's what you asked.\n- **Partial year:** The data stops on November 3, so 4,114 is not a full-year total. For comparison, the full-year counts were 4,574 in 2025 and 5,149 in 2024. The 2026 count is through early November, so it can't be compared directly to those full years.\n- **Incomplete records:** About 11% of NYC crash records have no location and 29% have no borough. These are still included in the citywide total, but they can't be assigned to a place.\n\nANSWER: 4114",
+   "repeat": 2
+  },
+  {
+   "id": "nyc_top_borough_cyclist_crashes_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    1542.0
+   ],
+   "got": 1542.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12398,
+   "output_tokens": 804,
+   "answer": "Manhattan had the most crashes that hurt a cyclist in 2025, with **1,542** crashes (1,570 cyclists hurt in total). Brooklyn was next with 1,452.\n\nThings to know before relying on this:\n\n- **Crashes with no borough are excluded from the ranking.** NYPD left the borough blank for 124 cyclist-hurt crashes in 2025. Those are shown separately and would not change the leader. Across all 2025 crashes, about 8% have no borough.\n- **\"Hurt\" means injured or killed.** The count uses `cyclists_hurt` (cyclists injured plus cyclists killed).\n- **The figures count crashes, not people.** The cyclists-hurt total is slightly higher because some crashes hurt more than one cyclist.\n- **The data covers all of 2025.** The latest crash date in the table is 2025-12-31.\n- **Results are NYPD-reported collisions.** They reflect police reports, which can differ from hospital or EMS records.\n\nANSWER: 1542",
+   "repeat": 2
+  },
+  {
+   "id": "nyc_pedestrians_killed_2023",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    107.0
+   ],
+   "got": 107.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 18066,
+   "output_tokens": 648,
+   "answer": "In the NYC crash data, 107 pedestrians were killed in crashes dated 2023.\n\nI summed `pedestrians_killed` over the 96,608 collisions in `fct_nyc_crashes` with `crash_year` = 2023. Every row has a non-null count, the year matches `crash_date` in every row, and each collision appears once. These are NYPD police reports, so the count may differ from other sources such as the city's Vision Zero dashboard or medical examiner records. The table also notes that about 11% of crashes have no location and 29% no borough, but those gaps don't affect a citywide total.\n\nANSWER: 107",
+   "repeat": 2
+  },
+  {
+   "id": "nyc_no_borough_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    7100.0
+   ],
+   "got": 7100.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 11761,
+   "output_tokens": 558,
+   "answer": "There are **7,100** NYC crashes in 2025 with no borough recorded, out of 85,559 crashes in 2025. That is about 8.3% of the year's crashes.\n\nI counted rows in `iceberg.marts.fct_nyc_crashes` where `crash_year = 2025` and `borough` is null. Blank-string boroughs would also be caught, and there were none beyond the nulls. The table documentation says a null borough means NYPD didn't record one. The table as a whole has about 29% missing boroughs, so 2025's rate is lower than the all-years figure. Any borough-level comparison should either report these 7,100 as a separate \"unknown\" group or exclude them, and say which.\n\nANSWER: 7100",
+   "repeat": 2
+  },
+  {
+   "id": "washington_st_summer_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    546.5
+   ],
+   "got": 546.5,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 15218,
+   "output_tokens": 677,
+   "answer": "Summer 2025 at Washington Street north of Bexley Road (location 60) averaged **546.5 bikes per day**.\n\n- **Data used:** The count was taken on two days, June 11 and June 12, 2025, with 541 and 552 bikes (both directions, 24 hours). The average of those two days is 546.5.\n- **Caveat:** This is a two-day sample, not a full summer. Boston counts each location for about two days a few times a year, so the figure is a snapshot of one season. Compare it with the same season in other years, not with other seasons.\n- **Year-over-year context:** Summer 2024 averaged 467.5 and summer 2023 averaged 327.5, so 2025 is the highest summer on record for this site in the data.\n- **Location match:** Only one location matched the name, so no rows were combined from different sites.\n\nANSWER: 546.5",
+   "repeat": 2
+  },
+  {
+   "id": "boston_avg_bikes_summer_2024",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    652.4125
+   ],
+   "got": 652.4125,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 21980,
+   "output_tokens": 809,
+   "answer": "The average was about 652 bikes per count day across Boston count locations in summer 2024.\n\nThe figure comes from `fct_boston_bike_counts_daily`, filtered to season = Summer and count_year = 2024. That gives 160 location-days across 83 locations, with no null bike counts and no duplicate day IDs.\n\nThings to keep in mind before relying on this number:\n- Each location is counted for only about two days per season, so this is a snapshot of the locations counted that season, not a full-season total.\n- The summer 2024 counts run from 2024-06-11 to 2024-07-10, so the window is wider than most other summers.\n- Different locations are counted in different seasons and years, so the average depends partly on which sites were sampled. Comparisons with other years are only meaningful within the same season.\n- Each count is a 24-hour total in both directions.\n\nANSWER: 652.4125",
+   "repeat": 2
+  },
+  {
+   "id": "boston_bike_share_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.04453249276536297
+   ],
+   "got": 0.04,
+   "correct": false,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 13005,
+   "output_tokens": 1664,
+   "answer": "**Answer: about 0.04 (0.0445).** In 2025, bikes were roughly 4.5% of all counted traffic in Boston's automated counts.\n\nI summed the 24-hour daily counts in `fct_boston_bike_counts_daily` for all 438 location-days in 2025 (91 locations, March through December):\n\n- Bikes: 303,464\n- Motor vehicles: 6,510,976\n- Bikes / (bikes + vehicles) = 303,464 / 6,814,440 \u2248 0.0445\n\nThe tool's own fraction column came back as 0.0, which looks like a display or casting problem, so I computed the ratio by hand from the summed counts.\n\nThings to know before relying on this number:\n\n- **Sampling is seasonal and uneven.** Each location is counted for about two days per season, not year-round. Fall has the most location-days (182), and winter has the fewest (72). Per-season fractions are roughly 0.03 to 0.05, so the pooled figure partly reflects which seasons and locations were sampled.\n- **Counts are not the same locations every season.** Spring, summer, and fall each cover 37 to 91 locations, so the pooled number is not a clean like-for-like measure.\n- **Bike counts are 24-hour totals in both directions.** Vehicles include cars, trucks, buses, and motorcycles. The fraction is a share of counted traffic at these sites, not a citywide mode share.\n- **Comparisons across years should use the same season.** The table's own guidance says this, and a single pooled 2025 number should not be compared with other years.\n\nANSWER: 0.04",
+   "repeat": 2
+  },
+  {
+   "id": "boston_locations_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    48.0
+   ],
+   "got": 48.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12327,
+   "output_tokens": 822,
+   "answer": "Boston's bike count data shows **48 distinct count locations** in 2026.\n\nI counted distinct `location_id` values in `fct_boston_bike_counts_daily` where `count_year = 2026`. The year filter agrees with the actual count dates, so no rows were misassigned to the year. There are 136 location-day rows across 9 distinct count dates, running from 2026-03-10 to 2026-09-17, and no missing bike counts.\n\nReaders should know that each location is counted for only about two days per season, and the 9 dates are spread across the year. So the 48 locations were not all counted on the same days. This is a count of locations with data in 2026, not of locations counted simultaneously. Also, `dim_boston_count_locations` lists every location ever counted, so its total is not a 2026 figure.\n\nANSWER: 48",
+   "repeat": 2
+  },
+  {
+   "id": "boston_top_location_2025",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4588.75
+   ],
+   "got": 4588.75,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 20372,
+   "output_tokens": 1008,
+   "answer": "The top Boston count location in 2025 was **Massachusetts Avenue north of Back Street** (location ID 44), with an average of about **4,589 bikes per count day** (4588.75).\n\nWhat to know before relying on it:\n\n- **Sample size:** The average is over 8 count days, two in each season. The daily counts ranged from 2,900 to 6,045.\n- **Season balance:** Because each season is covered by two count days, the average is not skewed toward one time of year. Winter averaged 2,912, and Fall averaged 5,975.\n- **Runner-up:** The next highest was BU Bridge north of Commonwealth Avenue at 2,184.5, but that average is over only 6 count days.\n- **Counts vary by location:** Some locations were counted only 2 days in 2025, so their averages rest on very little data. Location 44 is the strongest result because it has the most days and is well ahead of the others.\n- **Counts are 24-hour totals in both directions** from automated counters, not comparable to other cities' methods.\n\nANSWER: 4588.75",
+   "repeat": 2
+  },
+  {
+   "id": "boston_peak_hour",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    17.0
+   ],
+   "got": 17.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 13248,
+   "output_tokens": 821,
+   "answer": "Across all Boston hourly counts, **17:00 (5 p.m., the hour starting at 17:00)** has the most bikes: 234,843 bikes summed over the table, and the highest average per count (40.93). The 8:00 hour is second with 208,826.\n\nWhat to know before relying on this:\n\n- **Sampling, not a full year:** Each location is counted for about two days at a time, a few times a year. The table covers 91 locations over 147 count days, so these sums describe the sampled days, not total annual riding.\n- **Uneven coverage:** Locations and seasons differ, so the totals mix different places and times of year. The ranking is still clear, since 17:00 leads on both total and average.\n- **Source hour:** The hour values are Boston local time, as the table documents.\n\nANSWER: 17",
+   "repeat": 2
+  },
+  {
+   "id": "boston_bike_crashes_2024",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    366.0
+   ],
+   "got": 366.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12155,
+   "output_tokens": 645,
+   "answer": "Boston's Vision Zero data records **366** crashes involving a person on a bike in 2024.\n\n- The `mode` field has three values for 2024: motor_vehicle (2,627), pedestrian (465), and bike (366).\n- All 366 rows have distinct crash IDs, so there are no duplicate dispatches inflating the count.\n- Crash dates run from 2024-01-02 to 2024-12-28.\n\nBefore relying on this number, note that the source is EMS dispatch records, not police reports. The table only includes crashes that led to an ambulance call, so crashes that were handled without EMS are missing and the true count is likely higher. It also isn't directly comparable to NYC's police-report data.\n\nANSWER: 366",
+   "repeat": 2
+  },
+  {
+   "id": "bluebikes_trips_sep_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    555121.0
+   ],
+   "got": 555121.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12333,
+   "output_tokens": 696,
+   "answer": "There were **555,121** Bluebikes trips starting in September 2026, according to the daily trips mart (`fct_bluebikes_trips_daily`).\n\nThings to know before relying on this number:\n- The month is complete: the data has all 30 September days, with no gaps.\n- The count is by trip start date, and it includes trips with no start station (e-bike trips that began away from a station). Those rows are counted in `trips` but have a null station ID.\n- Trip times are local. The November clock-change exclusion affects only duration fields, not this trip count.\n\nANSWER: 555121",
+   "repeat": 2
+  },
+  {
+   "id": "bluebikes_ebike_share_oct_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.4039290881639237
+   ],
+   "got": 0.4,
+   "correct": false,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12543,
+   "output_tokens": 973,
+   "answer": "About 40% of Bluebikes trips in October 2026 were on electric bikes.\n\nIn `fct_bluebikes_trips_daily`, October 2026 had 230,879 electric-bike trips out of 571,583 total (340,704 classic plus 230,879 electric). That gives 230,879 / 571,583 \u2248 0.404.\n\nThings to know before relying on this:\n- The data runs the full month, from October 1 to October 31, 2026.\n- I used the `trips` column, which counts all trips. The table stores e-bike trips that started away from a station with a null station ID, and those are included in the totals.\n- Trip dates are local time.\n- For context, September 2026 was about 0.37 electric (205,990 of 555,121), so October's share is higher.\n\nANSWER: 0.40",
+   "repeat": 2
+  },
+  {
+   "id": "bluebikes_casual_minutes_jul_2026",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    25.260724414136618
+   ],
+   "got": 25.26,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 12258,
+   "output_tokens": 762,
+   "answer": "The average casual (non-member) Bluebikes trip in July 2026 was about 25.26 minutes.\n\nI took total trip minutes divided by trips with a usable duration, for casual riders on July 1\u201331, 2026, from `fct_bluebikes_trips_daily`. All 184,770 casual trips that month have a usable duration, so the average covers every casual trip in the data.\n\nThings to keep in mind:\n- This is a mean, so a small number of very long trips (for example, bikes not docked for hours) pulls it up. I did not check the distribution or the median.\n- The table notes that trips across the November clock change are excluded from the duration count. That doesn't affect July.\n- For comparison, members averaged about 13.9 minutes over the same month.\n\nANSWER: 25.26",
+   "repeat": 2
+  },
+  {
+   "id": "nyc_protected_segments_2023",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    687.0
+   ],
+   "got": 687.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 13497,
+   "output_tokens": 1008,
+   "answer": "**687 NYC street segments** had their first protected bike lane installed in 2023, according to `iceberg.marts.dim_nyc_protected_lanes`.\n\n- The table lists each segment once, with the date its first protected lane went in. The 687 count is 687 distinct segment IDs, with no duplicates and no missing install dates.\n- 685 of the 687 still have a current bike facility record. The other 2 have been removed or superseded, but they were still protected lanes when installed, so I kept them.\n- The install dates are not fully clean. The table has segments with install years going back to 1894, and years 2025 and 2026 appear too. The pre-2015 dates probably reflect old or re-coded records rather than real protected-lane installs from that era. I did not check those against any other source. The 2023 figure is consistent with the neighboring years (438 in 2022, 566 in 2024), so it does not look like an outlier.\n\nANSWER: 687",
+   "repeat": 2
+  },
+  {
+   "id": "new_lane_change_all",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.17304492512479203
+   ],
+   "got": 0.17,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 4,
+   "input_tokens": 20388,
+   "output_tokens": 1480,
+   "answer": "The number of cyclists hurt within about 50 m of the new protected lane segments rose from 4,207 in the two years before installation to 4,935 in the two years after. That is a change of +728, or **+0.17** of the before count.\n\nWhat to know before relying on this:\n\n- **Segment-level, not per-street.** The 4,349 segments are summed directly. A crash near adjacent segments counts once for each segment, so the total double-counts some crashes.\n- **Not a controlled comparison.** Citywide cyclist injuries also rose over the same windows, from about 42.9 million to 43.7 million in the summed column. Those citywide figures are repeated on every segment row, so the sums are not meaningful as totals. I used the local 50 m counts only.\n- **Year-to-year swings are large.** The 2020 cohort rose from 685 to 1,023, which is the largest jump of any year. The 2023 cohort fell from 687 to 593 after installation, so the overall rise is not uniform across installation years.\n- **Possible incomplete \"after\" windows.** Installations from 2023 and 2024 may not have a full two years of crash data after installation. The crash table also has dates running to 2026, which suggests date quality problems, so I could not confirm the data cutoff.\n\nComputed as (4,935 \u2212 4,207) / 4,207 = 0.173.\n\nANSWER: 0.17",
+   "repeat": 2
+  },
+  {
+   "id": "new_lane_change_brooklyn",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.43501611170784105
+   ],
+   "got": 0.44,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 12687,
+   "output_tokens": 1301,
+   "answer": "For Brooklyn, cyclists hurt near new protected lanes rose by a fractional change of **0.44** (about 0.435), from 931 before to 1,336 after across 843 segments.\n\nThings to know before relying on this:\n\n- **The count is per segment, not per crash.** The table counts a crash once for each segment within about 50 m of it, so crashes near adjacent segments are counted more than once. The 931 and 1,336 totals are therefore segment-crash pairs, not unique injuries.\n- **No control for citywide trends.** The table has citywide cyclist-injury counts for the same windows, but this is a raw before/after comparison. Citywide injuries may have changed over the same period, so the change may not be caused by the lanes. I did not run that comparison.\n- **Segments installed recently have a shorter window.** Segments installed in late 2022 through October 2024 may not have two full years of \"after\" data, which makes the comparison uneven.\n- **Installation date selection.** Segments were selected by install year (2015 through 2024, with 2024 covering only through October). Segments that were later removed are still included.\n- **Missing data.** NYC crash records have some missing boroughs (about 29% overall), so Brooklyn's count may be slightly understated.\n\nANSWER: 0.44",
+   "repeat": 2
+  },
+  {
+   "id": "citywide_change_same_windows",
+   "arm": "sql_only",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.017483580955972328
+   ],
+   "got": 0.017,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 6,
+   "input_tokens": 40025,
+   "output_tokens": 2895,
+   "answer": "The citywide cyclists-hurt change is about +0.017 (roughly 1.7% more cyclists hurt after than before), but the table doesn't give a single citywide before/after pair, so this is an approximation.\n\n- **The data:** `fct_nyc_new_lane_safety` has 4,349 segment rows, and each row carries citywide cyclists-hurt counts for that segment's own before and after windows. The windows depend on the install date, which spans 2015-01-01 to 2024-10-24 across 254 distinct dates.\n- **Why I deduplicated:** Summing across all segment rows counts each install-date window once per segment, which weights busy install dates more heavily. Keeping one before/after pair per install date gives 254 windows: 2,515,211 cyclists hurt before and 2,557,571 after. That is a change of 0.0168.\n- **Other ways to aggregate:** Summing every segment row gives 0.0175. Averaging the per-segment changes gives 0.022. The direction is the same in all three, but the magnitude depends on the method.\n- **Caveats:** The counts come from NYPD crash reports, which can be incomplete or inconsistent in coverage. The windows are also not calendar-aligned, so this is a rough citywide figure rather than a controlled estimate of protected-lane effects.\n\nANSWER: 0.017",
+   "repeat": 2
+  },
+  {
+   "id": "nyc_cyclist_crashes_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4514.0
+   ],
+   "got": 4514.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22379,
+   "output_tokens": 718,
+   "answer": "**4,514** NYC crashes in 2025 hurt at least one cyclist, according to the `nyc_cyclist_injury_crashes` metric.\n\nThe count comes from NYPD crash reports, so it is police-reported crashes only. The metric counts a crash once if it recorded at least one cyclist injured or killed. The data also includes 2026 records, so 2025 should be a complete year, though the metric's caveat calls the current year partial. The count doesn't adjust for how many people ride, and that has grown, so it can't show whether cycling got safer. The metric's citywide total covers all crashes, so the roughly 29% of crashes with no borough recorded are included.\n\nANSWER: 4514",
+   "repeat": 2
+  },
+  {
+   "id": "nyc_cyclists_killed_2024",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    22.0
+   ],
+   "got": 22.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22250,
+   "output_tokens": 627,
+   "answer": "NYC recorded **22 cyclists killed** in 2024, per the `nyc_cyclists_killed` metric, which sums the cyclist-fatality counts in NYPD crash reports by crash year.\n\nThings to know before relying on it:\n- **2024 is a complete year.** The metric's \"current year is partial\" caveat applies to 2026, which is in the data, not to 2024.\n- **Police-reported data.** It won't match counts from other sources, such as EMS-based Boston figures, and it doesn't adjust for how many people ride.\n- **Borough gaps.** About 29% of NYC crashes have no borough. That doesn't affect the citywide total above, but it would matter for a borough breakdown.\n\nFor context, the same metric shows 31 in 2023 and 31 in 2019, so 2024 was lower than both.\n\nANSWER: 22",
+   "repeat": 2
+  },
+  {
+   "id": "nyc_cyclists_injured_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4114.0
+   ],
+   "got": 4114.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 5,
+   "input_tokens": 38614,
+   "output_tokens": 961,
+   "answer": "In 2026 so far, **4,114 cyclists were injured** in NYC crashes, according to the NYPD-reported crash data in the `nyc_cyclists_injured` metric.\n\nBefore relying on this number:\n- **2026 is a partial year.** The data runs into early November. November shows only 33 injuries, against roughly 520\u2013570 in each full month from June through October, so the month is incomplete.\n- **Police-reported counts only.** These come from NYPD reports and are not directly comparable with Boston's EMS-based numbers.\n- **Not adjusted for ridership.** The counts don't account for how many people ride, which has grown.\n\nFor context, the 2025 full-year total was 4,574.\n\nANSWER: 4114",
+   "repeat": 2
+  },
+  {
+   "id": "nyc_top_borough_cyclist_crashes_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    1542.0
+   ],
+   "got": 1542.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 24982,
+   "output_tokens": 846,
+   "answer": "In 2025, **Manhattan** had the most NYC crashes that hurt a cyclist: **1,542**, ahead of Brooklyn with 1,452.\n\nThings to know before relying on this:\n- The count comes from NYPD crash reports, where a crash counts if at least one cyclist was injured or killed.\n- About 29% of crashes have no borough recorded. In 2025, 124 cyclist-injury crashes had no borough, so the true borough totals are higher than shown.\n- The counts don't adjust for how many people ride. Manhattan's lead may partly reflect more riders there.\n- The \"current year\" in this data is 2026 and is partial. I used the full 2025 year.\n\nANSWER: 1542",
+   "repeat": 2
+  },
+  {
+   "id": "nyc_pedestrians_killed_2023",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    107.0
+   ],
+   "got": 107.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22249,
+   "output_tokens": 468,
+   "answer": "**107 pedestrians were killed in NYC crashes in 2023.**\n\nThe `nyc_pedestrians_killed` metric, grouped by year, gives 107 for 2023. This is a police-reported count (NYPD data), so it may not match counts from other sources. The metric has no caveats of its own, and 2023 is a complete year, unlike the partial 2026 figure in the same table.\n\nANSWER: 107",
+   "repeat": 2
+  },
+  {
+   "id": "nyc_no_borough_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    7100.0
+   ],
+   "got": 7100.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 5,
+   "input_tokens": 26016,
+   "output_tokens": 758,
+   "answer": "There were **7,100** NYC crashes in 2025 with no borough recorded.\n\nThe `nyc_crashes` metric (police-reported, all modes) returns this count. It is a null borough, not a separate borough label. The 2025 total is 85,559 crashes, so about 0.08 of them lack a borough. That is lower than the metric's general caveat of about 29%, which covers all years combined. 2025 is a complete year; the partial-year caveat applies to 2026.\n\nANSWER: 7100",
+   "repeat": 2
+  },
+  {
+   "id": "washington_st_summer_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    546.5
+   ],
+   "got": 546.5,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 17252,
+   "output_tokens": 692,
+   "answer": "In summer 2025, Washington Street north of Bexley Road averaged **546.5 bikes per count day**, based on 2 count days.\n\nThings to know before relying on this:\n- **Small sample:** The location is counted for about two days a few times a year, so one unusual day can move the average a lot.\n- **Season comparison:** Summer 2025 is well above the other summers in this series (for example, 467.5 in 2024 and 327.5 in 2023), but the two-day sample makes year-to-year comparisons rough.\n- **Season definition:** Since 2020 the City also counts in winter and spring, which lowers all-season averages. This figure is summer-only, so that doesn't affect it directly.\n\nANSWER: 546.5",
+   "repeat": 2
+  },
+  {
+   "id": "boston_avg_bikes_summer_2024",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    652.4125
+   ],
+   "got": 652.4125,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 15921,
+   "output_tokens": 801,
+   "answer": "In summer 2024, Boston's count locations averaged about **652 bikes per count day** per location (652.41). This comes from 160 location-days, with 104,386 bikes counted in total.\n\nBefore relying on this number:\n- **Sample size:** Each location is counted for about two days, a few times a year, so the 160 location-days are a modest sample. Small samples move a lot.\n- **Comparisons:** Compare summer with other summers, not with all-season averages. Since 2020 the City also counts in winter and spring, which pulls all-season averages down.\n- **Metric choice:** The per-day average is the right figure for comparisons. The raw total (104,386) depends on how many locations and days were counted.\n\nANSWER: 652.4125",
+   "repeat": 2
+  },
+  {
+   "id": "boston_bike_share_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.04453249276536297
+   ],
+   "got": 0.0445,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 16708,
+   "output_tokens": 853,
+   "answer": "In Boston's 2025 counts, bikes made up about 4.5% of all counted traffic: 303,464 bikes out of 6,814,440 bikes plus motor vehicles, a ratio of 0.0445.\n\nBefore relying on this number:\n\n- **Sampling:** Each location is counted for about two days, a few times a year. The 2025 total comes from 438 location-days, so it reflects the count sample, not continuous measurement.\n- **Season mix:** Since 2020 the City also counts in winter and spring. Bike share is usually higher in warm months, so this all-season figure isn't a clean year-over-year comparison. Compare like seasons where you can.\n- **Trend:** The share has risen from about 0.03 in 2016\u20132017 to 0.045 in 2025. 2026 is partial so far (0.0515 on 136 count-days) and I didn't use it.\n\nANSWER: 0.0445",
+   "repeat": 2
+  },
+  {
+   "id": "boston_locations_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    48.0
+   ],
+   "got": 48.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 16660,
+   "output_tokens": 1149,
+   "answer": "There were **48 distinct Boston bike count locations** with counts in 2026.\n\nI got this from the `boston_count_days` metric, grouped by location name and filtered to count year 2026. The result was not truncated, and I counted the 48 rows returned. Each location appears with 2 to 6 count-days, so the number of locations is not the same as the number of count-days (the metric's total is larger).\n\nTwo things to keep in mind: the metric notes that each location is counted only about two days a few times a year, so per-location data is thin. Also, 2026 may be a partial year, so this is the count of locations counted so far, not a full-year figure.\n\nANSWER: 48",
+   "repeat": 2
+  },
+  {
+   "id": "boston_top_location_2025",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    4588.75
+   ],
+   "got": 4588.75,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 25780,
+   "output_tokens": 871,
+   "answer": "**Massachusetts Avenue north of Back Street** had the highest average in 2025, at **4,588.75 bikes per count day** across 8 count days.\n\nThe number needs some context:\n\n- **Sample size:** 8 count days is a moderate sample. Each location is counted for about two days a few times a year, so a single unusual day can move the average a lot. The next-highest location, BU Bridge north of Commonwealth Avenue, averaged 2,184.5 over 6 days, so the gap is large.\n- **Season mix:** The average covers all seasons. Since 2020 the City also counts in winter and spring, which pulls all-season averages down. I did not break this out by season, so comparisons across locations may partly reflect which seasons each one was counted in.\n- **Not a total:** This is a per-day average per location, not a yearly total, so it isn't affected by how many locations were counted.\n\nANSWER: 4588.75",
+   "repeat": 2
+  },
+  {
+   "id": "boston_peak_hour",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    17.0
+   ],
+   "got": 17.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 31883,
+   "output_tokens": 858,
+   "answer": "The busiest hour is **17:00\u201317:59 local time**, with 234,843 bikes counted across all Boston locations in the hourly data. The 8:00\u20138:59 hour is second with 208,826.\n\nThings to know before relying on this:\n- The hourly table covers 91 count locations and 147 count dates. Every hour has the same number of rows (about 5,738), so the hours are compared on the same sample.\n- These are sums over sampled location-days, not averages per day. Each location is counted for only about two days a few times a year, so the ranking reflects that sample, not a full year of traffic.\n- The 17 vs. 8 margin is about 12%, so the evening peak is clear but the two peaks are not far apart.\n- No existing metric groups Boston counts by hour, so I queried the hourly table directly.\n\nANSWER: 17",
+   "repeat": 2
+  },
+  {
+   "id": "boston_bike_crashes_2024",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    366.0
+   ],
+   "got": 366.0,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22341,
+   "output_tokens": 486,
+   "answer": "Boston's Vision Zero data records **366** crashes involving a person on a bike in 2024. The query filtered the `boston_bike_crashes` metric to the bike mode and grouped by year.\n\nBefore relying on this number:\n- **EMS-based count:** the data comes from EMS dispatches, so crashes where no ambulance was called are missing. The true number of bike crashes is likely higher.\n- **Not comparable with NYC:** NYC crash counts come from police reports, so the two cities can't be compared directly.\n\nANSWER: 366",
+   "repeat": 2
+  },
+  {
+   "id": "bluebikes_trips_sep_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    555121.0
+   ],
+   "got": 555121.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 22406,
+   "output_tokens": 625,
+   "answer": "Bluebikes recorded **555,121 trips** starting in September 2026.\n\nThe metric counts trips by start date. The data runs through October 2026, so September should be complete. The only caveat on this metric is that it covers the latest 12 months, and its partial month is October 2025, which doesn't affect this figure.\n\nANSWER: 555121",
+   "repeat": 2
+  },
+  {
+   "id": "bluebikes_ebike_share_oct_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.4039290881639237
+   ],
+   "got": 0.4,
+   "correct": false,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 24064,
+   "output_tokens": 762,
+   "answer": "In October 2026, about 0.40 of Bluebikes trips were on electric bikes: 230,879 e-bike trips out of 571,583 total trips (230,879 / 571,583 = 0.404).\n\nBefore relying on this number:\n- The e-bike share depends on how many e-bikes were in service, not only on rider choice.\n- The trip data covers only the latest 12 months. October 2026 is well inside that window, so the partial-month caveat, which applies to the earliest month, doesn't affect it.\n\nANSWER: 0.40",
+   "repeat": 2
+  },
+  {
+   "id": "bluebikes_casual_minutes_jul_2026",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    25.260724414136618
+   ],
+   "got": 25.26,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 4,
+   "input_tokens": 30444,
+   "output_tokens": 885,
+   "answer": "Casual (non-member) riders averaged about **25.26 minutes** per Bluebikes trip in July 2026. For comparison, members averaged about 13.92 minutes that month.\n\nThe figure comes from the `bluebikes_avg_trip_minutes` metric, grouped by member type and month. July is a complete month in the data, since October 2026 is also loaded. The metric's only caveat is that trips across the November clock change are excluded, which does not affect July. The result is an average over trips that have a recorded duration, so trips without a usable duration are not counted.\n\nANSWER: 25.26",
+   "repeat": 2
+  },
+  {
+   "id": "nyc_protected_segments_2023",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    687.0
+   ],
+   "got": 687.0,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 15188,
+   "output_tokens": 367,
+   "answer": "In 2023, 687 NYC street segments got their first protected bike lane, according to the `new_lane_segments` metric.\n\nThe metric counts each segment once, by its install year, and it has no caveats of its own. It covers installs from 2015 through October 2024, so 2023 is a full year. The count is segments, not miles or separate projects, so one long street can add many segments.\n\nANSWER: 687",
+   "repeat": 2
+  },
+  {
+   "id": "new_lane_change_all",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.17304492512479203
+   ],
+   "got": 0.17,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 3,
+   "input_tokens": 18861,
+   "output_tokens": 977,
+   "answer": "The number of cyclists hurt within about 50 m of new NYC protected lanes rose by about 0.17 (17%), from 4,207 in the two years before installation to 4,935 in the two years after.\n\n- **Citywide comparison:** Over the same windows, all NYC cyclist injuries rose by about 0.02. The lane-area rise is roughly 0.16 above that baseline, but this is a simple before/after comparison, not a controlled estimate.\n- **Year-by-year:** The change varies a lot by install year. 2015 is +0.41, 2020 is +0.49, and 2021 is +0.35, while 2019 is \u22120.04 and 2022 is \u22120.10. The 2020 and 2021 windows overlap the pandemic, when riding patterns changed.\n- **Exposure:** Lanes tend to go where riding is already growing, and there is no per-street ridership count to adjust for it. More riders after a lane opens would also raise the count, so the rise may partly reflect more exposure.\n- **Double counting:** A crash near several adjacent segments counts once per segment.\n\nANSWER: 0.17",
+   "repeat": 2
+  },
+  {
+   "id": "new_lane_change_brooklyn",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.43501611170784105
+   ],
+   "got": 0.44,
+   "correct": true,
+   "makes_point": true,
+   "stop_reason": "end_turn",
+   "tool_calls": 2,
+   "input_tokens": 19003,
+   "output_tokens": 947,
+   "answer": "For Brooklyn, cyclists hurt within about 50 m of new protected lanes rose by about 0.44 (0.435) from the two years before to the two years after the lane went in.\n\n- **Counts:** 931 cyclists hurt in the two years before, 1,336 in the two years after, across 843 new lane segments in Brooklyn (installed 2015 through October 2024).\n- **Citywide comparison:** Over the same windows, all NYC cyclist injuries rose about 0.01 (0.014). Brooklyn's lane-area rise is about 0.42 above that citywide change.\n\nCaveats before relying on this:\n- Lanes tend to go where riding is already growing, and there is no per-street ridership count to adjust for that. More riders means more exposure, so part of the rise may not be due to the lanes.\n- Windows for installs after 2020 overlap the pandemic, when riding patterns changed.\n- A crash near several adjacent segments counts once per segment, so the totals can double-count.\n- The NYPD crash data omits borough for about 29% of crashes, so the Brooklyn figures may be understated.\n\nANSWER: 0.44",
+   "repeat": 2
+  },
+  {
+   "id": "citywide_change_same_windows",
+   "arm": "semantic_first",
+   "model": "claude-haiku-5-5",
+   "expected": [
+    0.017483580955972328
+   ],
+   "got": 0.0175,
+   "correct": true,
+   "makes_point": null,
+   "stop_reason": "end_turn",
+   "tool_calls": 4,
+   "input_tokens": 29540,
+   "output_tokens": 1994,
+   "answer": "The fractional change in cyclists hurt citywide, over the same before and after windows used for the NYC protected lanes installed 2015 through October 2024, is about **0.017** (roughly +1.7%). That is 43,689,583 after versus 42,938,858 before, from the `citywide_injury_change` metric.\n\nBefore relying on this number, note:\n\n- **The totals look inflated.** Each lane segment carries the citywide count for its own before and after window, and the metric sums those rows. Individual windows show citywide counts of roughly 800,000 to 1,000,000 cyclists hurt, which is far more than NYC's actual cyclist injury counts over two years. So the absolute totals are not real counts of people hurt, and the 0.017 is effectively a segment-weighted average of window-level changes, not a true citywide change.\n- **The per-year changes vary a lot.** By install year, the change ranges from \u22120.08 (2024) to +0.21 (2015). Results depend on which windows get the most segments.\n- **Citywide injuries have no ridership adjustment.** The metric does not account for changes in how many people ride.\n- **Pandemic effects.** Windows for 2020 installs overlap the pandemic, when riding patterns changed.\n\nThe metric's own caveats list none of these issues, so treat 0.017 as the metric as defined, with the inflation problem flagged above.\n\nANSWER: 0.0175",
+   "repeat": 2
+  }
+ ]
+}
