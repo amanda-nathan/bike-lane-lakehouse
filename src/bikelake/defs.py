@@ -1,5 +1,6 @@
 """Dagster definitions: raw loads, dbt models, live station snapshots, schedules, checks."""
 
+import json
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -20,7 +21,7 @@ from dagster import (
 from dagster_dbt import DagsterDbtTranslator, DbtCliResource, DbtProject, dbt_assets
 from pyiceberg.table.snapshots import Operation
 
-from bikelake import stations
+from bikelake import publish, stations
 from bikelake.extract import extract
 from bikelake.load import catalog, load
 from bikelake.sources import SOURCES, Source
@@ -125,6 +126,23 @@ def dbt_models(context: AssetExecutionContext, dbt: DbtCliResource):
     yield from dbt.cli(["build"], context=context).stream()
 
 
+def mart_names() -> list[str]:
+    nodes = json.loads(dbt_project.manifest_path.read_text())["nodes"].values()
+    return sorted(n["name"] for n in nodes if n["resource_type"] == "model" and n["config"].get("schema") == "marts")
+
+
+@asset(
+    key=AssetKey(["public", "marts"]),
+    group_name="public",
+    kinds={"python", "iceberg"},
+    deps=[AssetKey(["marts", name]) for name in mart_names()],
+    description="Copy every mart table to Cloudflare R2 for the public MCP server. Needs the R2_* settings.",
+)
+def public_marts() -> MaterializeResult:
+    rows = publish.publish()
+    return MaterializeResult(metadata={"tables": len(rows), "rows": sum(rows.values())})
+
+
 @asset(
     group_name="live",
     kinds={"python", "postgres"},
@@ -153,7 +171,7 @@ schedules.append(
 )
 
 defs = Definitions(
-    assets=[raw_asset(s) for s in SOURCES.values()] + [dbt_models, station_status],
+    assets=[raw_asset(s) for s in SOURCES.values()] + [dbt_models, public_marts, station_status],
     asset_checks=[row_count_check(s) for s in SOURCES.values()] + [schema_check(s) for s in SOURCES.values()],
     schedules=schedules,
     resources={"dbt": DbtCliResource(project_dir=dbt_project)},
