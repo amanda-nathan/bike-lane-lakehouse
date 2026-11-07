@@ -30,6 +30,7 @@ def fresh_table():
         cat.purge_table(TABLE)
     yield
     cat.purge_table(TABLE)  # drop_table would leave the files in storage
+    storage.s3().delete_dir(f"{LANDING_BUCKET}/{SOURCE.name}")
 
 
 def test_new_column_is_added_and_old_snapshot_still_reads():
