@@ -4,11 +4,11 @@ People you give the access key to can connect an AI client (Claude, for example)
 
 ## Why Cloud Run
 
-The first plan was a free Hugging Face Space (`space/`). Hugging Face now only runs Docker Spaces on free hardware for PRO subscribers, so the deploy failed with 402 Payment Required. Cloud Run runs the same container, has a free monthly allowance, and scales to zero when nobody is using it.
+The first plan was a free Hugging Face Space ([`space/`](../space/)). Hugging Face now only runs Docker Spaces on free hardware for PRO subscribers, so the deploy failed with 402 Payment Required. Cloud Run runs the same container, has a free monthly allowance, and scales to zero when nobody is using it.
 
 ## What runs
 
-One container, built from `space/Dockerfile`:
+One container, built from [`space/Dockerfile`](../space/Dockerfile):
 
 - **Trino**, with a single catalog: the mart tables on Cloudflare R2, read through a **read-only key**. The image's sample catalogs are removed, so nothing can be written anywhere.
 - **The MCP server** on port 7860, with the same tools and limits as locally: one SELECT at a time on `iceberg.marts`, 30 seconds, 1,000 rows. It only accepts requests addressed to its own hostnames.
@@ -39,7 +39,7 @@ claude mcp add --transport http bikelake https://<service-url>/mcp \
   --header "Authorization: Bearer <MCP_ACCESS_KEY>"
 ```
 
-To give someone access, send them the URL and the key. To shut everyone out, change `MCP_ACCESS_KEY` in `.env` and re-run `cloudrun/deploy.sh`.
+To give someone access, send them the URL and the key. To shut everyone out, change `MCP_ACCESS_KEY` in `.env` and re-run [`cloudrun/deploy.sh`](deploy.sh).
 
 ## Settings and cost
 
@@ -50,17 +50,17 @@ To give someone access, send them the URL and the key. To shut everyone out, cha
 | Instances | 0 to 1 | Scales to zero when idle; never more than one copy running |
 | Startup CPU boost | on | Trino starts faster |
 
-At the time of writing, Cloud Run's free tier covers 180,000 vCPU-seconds, 360,000 GiB-seconds, and 2 million requests a month, and an instance is billed only while it handles requests. With 4 GiB, the memory allowance is the limit: about 25 hours of active use a month. Image storage beyond Artifact Registry's free 0.5 GB costs a few cents a month; `deploy.sh` sets a cleanup rule (`cleanup-policy.json`) that keeps only the newest image, so old ones don't pile up. Check [Cloud Run pricing](https://cloud.google.com/run/pricing) for current numbers.
+At the time of writing, Cloud Run's free tier covers 180,000 vCPU-seconds, 360,000 GiB-seconds, and 2 million requests a month, and an instance is billed only while it handles requests. With 4 GiB, the memory allowance is the limit: about 25 hours of active use a month. Image storage beyond Artifact Registry's free 0.5 GB costs a few cents a month; [`deploy.sh`](deploy.sh) sets a cleanup rule ([`cleanup-policy.json`](cleanup-policy.json)) that keeps only the newest image, so old ones don't pile up. Check [Cloud Run pricing](https://cloud.google.com/run/pricing) for current numbers.
 
 The first request after the service has been idle starts a new instance, which takes about a minute while Trino starts.
 
-Trino is told to reach itself at 127.0.0.1 (`node.internal-address` in `space/Dockerfile`). Without that, on Cloud Run it advertises an internal IPv6 address it can't connect to, and every query times out.
+Trino is told to reach itself at 127.0.0.1 (`node.internal-address` in [`space/Dockerfile`](../space/Dockerfile)). Without that, on Cloud Run it advertises an internal IPv6 address it can't connect to, and every query times out.
 
 ## Running it
 
 | Task | Command |
 |---|---|
-| Redeploy after a code change | `cloudrun/deploy.sh` |
+| Redeploy after a code change | [`cloudrun/deploy.sh`](deploy.sh) |
 | Redeploy a settings change, reusing the last image | `SKIP_BUILD=1 cloudrun/deploy.sh` |
 | Check the key is required (expect 401) | `curl -s -o /dev/null -w '%{http_code}\n' -X POST <service-url>/mcp` |
 | See the service, URL, and revisions | `gcloud run services describe bikelake-mcp --region us-east1` |
@@ -78,6 +78,6 @@ Problems hit during the first deploy, and the fixes now in place:
 
 ## Refreshing the data
 
-The server reads whatever is in R2, so new data needs no redeploy. GitHub Actions republishes every day at 6:30 am Eastern (`.github/workflows/refresh.yml`). To refresh sooner, run that workflow from the Actions tab or with `gh workflow run refresh.yml`, or materialize `public/marts` in the local Dagster.
+The server reads whatever is in R2, so new data needs no redeploy. GitHub Actions republishes every day at 6:30 am Eastern ([`.github/workflows/refresh.yml`](../.github/workflows/refresh.yml)). To refresh sooner, run that workflow from the Actions tab or with `gh workflow run refresh.yml`, or materialize `public/marts` in the local Dagster.
 
 The workflow writes with the R2 **write** key, stored as GitHub repository secrets (`R2_*`). The server only ever has the read-only key.

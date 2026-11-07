@@ -17,7 +17,7 @@ Haiku's misses on the easy set are rounding (0.4 for 0.404).
 
 - **Opus got everything right either way.** With documented tables, the semantic layer didn't change its accuracy.
 - **Haiku is where the semantic layer helped.** Asked whether new lanes make streets more dangerous, SQL-only Haiku never mentioned that more people ride after a lane opens, in 3 of 3 runs. With the metric, that caveat came along.
-- **The eval caught mistakes on my side.** Two answers I first marked wrong were better than my key. One compared summer and fall together, the seasons counted in both years. The other noticed that `fct_nyc_new_lane_safety` counts a crash once for every nearby segment, recounted Staten Island by distinct crash (3 after, 1 before, not 13 and 1), and got +200% instead of +1,200%. Both are now accepted answers, and the results were re-graded. The double count is a known issue in that mart.
+- **The eval caught mistakes on my side.** Two answers I first marked wrong were better than my key. One compared summer and fall together, the seasons counted in both years. The other noticed that [`fct_nyc_new_lane_safety`](../dbt/models/marts/fct_nyc_new_lane_safety.sql) counts a crash once for every nearby segment, recounted Staten Island by distinct crash (3 after, 1 before, not 13 and 1), and got +200% instead of +1,200%. Both are now accepted answers, and the results were re-graded. The double count is a known issue in that mart.
 
 The hard questions are in [questions_hard.yml](questions_hard.yml). Each one has a trap: a partial year, mixed seasons, two locations with the same street name, a 12-month data window, or numbers too small to mean anything.
 

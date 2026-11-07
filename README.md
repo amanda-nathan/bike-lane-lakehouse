@@ -12,6 +12,10 @@ I live near Hyde Park Ave in Roslindale, which has no bike lane; the City is [lo
 - **The NYC data can't show whether protected lanes make streets safer.** Cyclists hurt within about 50 meters (half a block) of new lanes rose 17%, against 1.7% citywide, but lanes go where riding is growing and there's no per-street ridership count to adjust for it.
 - **Putting the caveats in the metrics made AI answers more honest.** Asked through MCP, a small model gave the right number and the right caveat 29 of 30 times using the metrics, and 26 of 30 writing its own SQL. A large model got all 30 either way ([eval](evals/RESULTS.md)).
 
+**See it work.** A real Claude Code session connected to the public server. Claude calls the tools three times and answers with the numbers and the caveats (sped up 1.5×).
+
+![Claude Code answering a question through the public bikelake MCP server](docs/demo.gif)
+
 ![Cyclists hurt near new NYC protected lanes vs. citywide](docs/img/new_lanes_by_borough.png)
 
 ![Summer bike counts on Washington St in Roslindale](docs/img/washington_street_summers.png)
@@ -36,17 +40,17 @@ Everything runs in Docker on a laptop. For the public copy, GitHub Actions runs 
 
 | Piece | Where | What it does |
 |---|---|---|
-| RustFS | `docker-compose.yml` | S3-compatible storage. `landing` holds files as downloaded; `warehouse` holds Iceberg tables |
-| Iceberg REST catalog | `catalog/` | Tracks each table's current metadata. Keeps its pointers in Postgres |
-| Trino | `trino/catalog/` | Queries Iceberg and Postgres |
-| Loaders | `src/bikelake/` | Download each source, load it into `iceberg.raw` |
-| dbt | `dbt/` | Staging, intermediate, and mart models; tests; contracts; metrics with caveats |
-| Dagster | `src/bikelake/defs.py` | Loads, dbt models, schedules, and checks in one asset graph |
-| MCP server | `src/bikelake/mcp_server.py` | Metrics and read-only SQL for AI clients |
-| Eval | `evals/` | Accuracy of semantic-layer queries vs. plain text-to-SQL |
-| Cloudflare R2 | `src/bikelake/publish.py` | Public copy of the mart tables, in Cloudflare's Iceberg catalog |
-| Cloud Run | `cloudrun/` | Public MCP server: Trino reading R2 with a read-only key, behind an access key |
-| GitHub Actions | `.github/workflows/refresh.yml` | Runs the Dagster job daily and republishes to R2 |
+| RustFS | [`docker-compose.yml`](docker-compose.yml) | S3-compatible storage. `landing` holds files as downloaded; `warehouse` holds Iceberg tables |
+| Iceberg REST catalog | [`catalog/`](catalog/) | Tracks each table's current metadata. Keeps its pointers in Postgres |
+| Trino | [`trino/catalog/`](trino/catalog/) | Queries Iceberg and Postgres |
+| Loaders | [`src/bikelake/`](src/bikelake/) | Download each source, load it into `iceberg.raw` |
+| dbt | [`dbt/`](dbt/) | Staging, intermediate, and mart models; tests; contracts; metrics with caveats |
+| Dagster | [`src/bikelake/defs.py`](src/bikelake/defs.py) | Loads, dbt models, schedules, and checks in one asset graph |
+| MCP server | [`src/bikelake/mcp_server.py`](src/bikelake/mcp_server.py) | Metrics and read-only SQL for AI clients |
+| Eval | [`evals/`](evals/) | Accuracy of semantic-layer queries vs. plain text-to-SQL |
+| Cloudflare R2 | [`src/bikelake/publish.py`](src/bikelake/publish.py) | Public copy of the mart tables, in Cloudflare's Iceberg catalog |
+| Cloud Run | [`cloudrun/`](cloudrun/) | Public MCP server: Trino reading R2 with a read-only key, behind an access key |
+| GitHub Actions | [`.github/workflows/refresh.yml`](.github/workflows/refresh.yml) | Runs the Dagster job daily and republishes to R2 |
 
 Conventions and commands: [CLAUDE.md](CLAUDE.md). Why it's built this way: [docs/decisions/](docs/decisions/).
 
@@ -175,4 +179,4 @@ Local Dagster schedules (off until turned on): NYC crashes daily, the other sour
 - Compaction and snapshot expiry for the local tables (Cloudflare does both for the public copy)
 - Trino access control and column masking
 - CI that runs the tests on pull requests
-- `space/` is a Hugging Face Space version of the public server. It wasn't deployed: Hugging Face now requires a PRO subscription to run Docker Spaces on free hardware.
+- [`space/`](space/) is a Hugging Face Space version of the public server. It wasn't deployed: Hugging Face now requires a PRO subscription to run Docker Spaces on free hardware.
