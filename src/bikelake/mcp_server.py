@@ -13,6 +13,7 @@ import os
 import uvicorn
 from mcp.server.mcpserver import MCPServer
 from mcp.server.transport_security import TransportSecuritySettings
+from trino.exceptions import TrinoUserError
 
 from bikelake import semantic, warehouse
 
@@ -57,8 +58,15 @@ def query_metrics(
 
     Returns the rows, the SQL that produced them, and each metric's caveats.
     """
-    sql = semantic.compile_sql(metrics, group_by, where, order_by, limit)
-    result = warehouse.run(sql)
+    # Errors go back to the model as text, with MetricFlow's suggestions, so it can fix the query.
+    try:
+        sql = semantic.compile_sql(metrics, group_by, where, order_by, limit)
+    except semantic.InvalidQuery as e:
+        return {"error": str(e)}
+    try:
+        result = warehouse.run(sql)
+    except TrinoUserError as e:
+        return {"error": e.message, "sql": sql}
     return {**result, "sql": sql, "caveats": semantic.caveats_for(metrics)}
 
 
@@ -75,7 +83,10 @@ def run_sql(sql: str) -> dict:
         checked = warehouse.check_sql(sql)
     except warehouse.QueryRejected as e:
         return {"error": str(e)}
-    return {**warehouse.run(checked), "sql": checked}
+    try:
+        return {**warehouse.run(checked), "sql": checked}
+    except TrinoUserError as e:
+        return {"error": e.message, "sql": checked}
 
 
 class RequireAccessKey:

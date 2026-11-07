@@ -15,6 +15,10 @@ for name in ("metricflow", "metricflow_semantics", "dbt_metricflow"):
     logging.getLogger(name).setLevel(logging.WARNING)
 
 
+class InvalidQuery(ValueError):
+    """MetricFlow couldn't resolve the request, e.g. an unknown metric or dimension. The message has suggestions."""
+
+
 @cache
 def _engine():
     # Imported here: MetricFlow and dbt take a few seconds to load.
@@ -71,6 +75,7 @@ def compile_sql(
     limit: int | None = None,
 ) -> str:
     from metricflow.engine.metricflow_engine import MetricFlowQueryRequest
+    from metricflow_semantics.errors.error_classes import InvalidQueryException
 
     request = MetricFlowQueryRequest.create(
         metric_names=metric_names,
@@ -79,7 +84,10 @@ def compile_sql(
         order_by_names=order_by or [],
         limit=limit,
     )
-    return _engine().explain(request).sql_statement.sql
+    try:
+        return _engine().explain(request).sql_statement.sql
+    except InvalidQueryException as e:
+        raise InvalidQuery(str(e)) from e
 
 
 def tables() -> list[dict]:

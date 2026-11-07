@@ -12,7 +12,7 @@ I live near Hyde Park Ave in Roslindale, which has no bike lane; the City is [lo
 - **The NYC data can't show whether protected lanes make streets safer.** Cyclists hurt within about 50 meters (half a block) of new lanes rose 17%, against 1.7% citywide, but lanes go where riding is growing and there's no per-street ridership count to adjust for it.
 - **Putting the caveats in the metrics made AI answers more honest.** Asked through MCP, a small model gave the right number and the right caveat 29 of 30 times using the metrics, and 26 of 30 writing its own SQL. A large model got all 30 either way ([eval](evals/RESULTS.md)).
 
-**See it work.** A real Claude Code session connected to the public server (sped up 1.5×). Claude lists the metrics, queries the lane metrics for all of NYC, then queries them again by borough, and answers with the numbers and the caveats that come with the metrics. Claude picks the calls itself, so another question, or the same one asked again, can take more or fewer.
+**See it work.** A real Claude Code session connected to the public server (sped up 1.5×). Claude calls bikelake three times: it lists the metrics to learn their names and caveats, queries the lane metrics for all of NYC to get the headline number, then queries them again by borough to check whether the citywide rise holds everywhere (it doesn't; Manhattan is flat). It answers with the numbers and the caveats that come with the metrics. Claude picks the calls itself, so another question, or the same one asked again, can take more or fewer.
 
 ![Claude Code answering a question through the public bikelake MCP server](docs/demo-v2.gif)
 
