@@ -17,7 +17,11 @@ Haiku's misses on the easy set are rounding (0.4 for 0.404).
 
 - **Opus got everything right either way.** With documented tables, the semantic layer didn't change its accuracy.
 - **Haiku is where the semantic layer helped.** Asked whether new lanes make streets more dangerous, SQL-only Haiku never mentioned that more people ride after a lane opens, in 3 of 3 runs. With the metric, that caveat came along.
-- **The eval caught mistakes on my side.** Two answers I first marked wrong were better than my key. One compared summer and fall together, the seasons counted in both years. The other noticed that [`fct_nyc_new_lane_safety`](../dbt/models/marts/fct_nyc_new_lane_safety.sql) counts a crash once for every nearby segment, recounted Staten Island by distinct crash (3 after, 1 before, not 13 and 1), and got +200% instead of +1,200%. Both are now accepted answers, and the results were re-graded. The double count is a known issue in that mart ([the SQL behind it](#the-double-count-in-the-sql)).
+- **The eval checked my answer key too, and twice the AI was right where my key was wrong.** An answer key is just my own best answer, so it can be wrong. When an answer didn't match, I read it before marking it wrong:
+  1. **Washington St growth, 2018 to 2025.** My key compared summer with summer: +65%. One answer compared summer and fall together, the only seasons counted in both years: +97%. That's also a fair comparison, so it's now an accepted answer.
+  2. **Staten Island lanes.** My key used the totals in [`fct_nyc_new_lane_safety`](../dbt/models/marts/fct_nyc_new_lane_safety.sql): 1 cyclist hurt before the new lanes and 13 after, +1,200%. One answer noticed the same crashes showing up more than once, counted each crash once, and got 1 before and 3 after, +200%. It was right: my mart counts a crash once for every lane segment it's near, and one stretch of path there is six segments ([the SQL behind it](#the-double-count-in-the-sql)). Its answer is now accepted, and fixing the mart is the first item under [Next](#next).
+
+  After both changes I re-graded the saved answers against the corrected key (`--regrade`, no new AI calls).
 
 The hard questions are in [questions_hard.yml](questions_hard.yml). Each one has a trap: a partial year, mixed seasons, two locations with the same street name, a 12-month data window, or numbers too small to mean anything.
 
