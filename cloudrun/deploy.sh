@@ -31,6 +31,9 @@ gcloud services enable run.googleapis.com artifactregistry.googleapis.com cloudb
 # Image registry
 gcloud artifacts repositories describe "$REPO" --location "$REGION" >/dev/null 2>&1 ||
   gcloud artifacts repositories create "$REPO" --repository-format docker --location "$REGION"
+# Keep only the newest image, so storage stays near the free 0.5 GB.
+gcloud artifacts repositories set-cleanup-policies "$REPO" --location "$REGION" \
+  --policy cloudrun/cleanup-policy.json --no-dry-run >/dev/null
 
 # Credentials as secrets, named lowercase with dashes. A new version is added only when the value changed.
 RUNTIME_SA="$(gcloud projects describe "$PROJECT" --format 'value(projectNumber)')-compute@developer.gserviceaccount.com"

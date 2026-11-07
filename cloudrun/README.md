@@ -50,7 +50,7 @@ To give someone access, send them the URL and the key. To shut everyone out, cha
 | Instances | 0 to 1 | Scales to zero when idle; never more than one copy running |
 | Startup CPU boost | on | Trino starts faster |
 
-At the time of writing, Cloud Run's free tier covers 180,000 vCPU-seconds, 360,000 GiB-seconds, and 2 million requests a month, and an instance is billed only while it handles requests. With 4 GiB, the memory allowance is the limit: about 25 hours of active use a month. Image storage beyond Artifact Registry's free 0.5 GB costs a few cents a month. Check [Cloud Run pricing](https://cloud.google.com/run/pricing) for current numbers.
+At the time of writing, Cloud Run's free tier covers 180,000 vCPU-seconds, 360,000 GiB-seconds, and 2 million requests a month, and an instance is billed only while it handles requests. With 4 GiB, the memory allowance is the limit: about 25 hours of active use a month. Image storage beyond Artifact Registry's free 0.5 GB costs a few cents a month; `deploy.sh` sets a cleanup rule (`cleanup-policy.json`) that keeps only the newest image, so old ones don't pile up. Check [Cloud Run pricing](https://cloud.google.com/run/pricing) for current numbers.
 
 The first request after the service has been idle starts a new instance, which takes about a minute while Trino starts.
 
