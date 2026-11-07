@@ -14,7 +14,7 @@ I live near Hyde Park Ave in Roslindale, which has no bike lane; the City is [lo
 
 **See it work.** A real Claude Code session connected to the public server. Claude calls the tools three times and answers with the numbers and the caveats (sped up 1.5×).
 
-![Claude Code answering a question through the public bikelake MCP server](docs/demo.gif)
+![Claude Code answering a question through the public bikelake MCP server](docs/demo-v2.gif)
 
 ![Cyclists hurt near new NYC protected lanes vs. citywide](docs/img/new_lanes_by_borough.png)
 
