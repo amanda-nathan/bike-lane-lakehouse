@@ -162,7 +162,7 @@ Local Dagster schedules (off until turned on): NYC crashes daily, the other sour
 
 ## Not built yet
 
-- A mart with one row per crash near a new lane, to fix a double count the eval found
+- A mart with one row per crash near a new lane. Today a crash near two adjacent lane segments is counted once for each; the eval found it ([details](evals/RESULTS.md#what-it-showed))
 - Larger tables: NYC traffic speeds and Citi Bike trips
 - Incremental loads for NYC crashes, instead of a full reload
 - Compaction and snapshot expiry for the local tables (Cloudflare does both for the public copy)

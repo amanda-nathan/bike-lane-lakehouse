@@ -48,6 +48,6 @@ Needs `ANTHROPIC_API_KEY` in `.env` and the stack running. Raw answers and grade
 
 ## Next
 
-- Fix the double count: a mart with one row per crash near a new lane.
+- **Fix the double count** in [`fct_nyc_new_lane_safety`](../dbt/models/marts/fct_nyc_new_lane_safety.sql). The crash-to-lane join in [`int_nyc__cyclist_crashes_near_new_lanes`](../dbt/models/intermediate/int_nyc__cyclist_crashes_near_new_lanes.sql) matches a crash to every lane segment within about 50 m, so a crash near two adjacent segments is counted twice. The eval found it (see [What it showed](#what-it-showed)): Claude recounted Staten Island by distinct crash and got 3 after vs. 1 before, not 13 vs. 1. The fix is a mart with one row per crash near a new lane, so totals count each crash once. Until then, the lane metrics carry it as a caveat in [`_semantic.yml`](../dbt/models/marts/_semantic.yml).
 - Spot-check the model grader against my own reading of a sample of answers.
 - Questions with no single right number, where the right answer is "the data can't say".
