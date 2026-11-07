@@ -2,11 +2,17 @@
 
     uv run bikelake-mcp                              # stdio, for a local MCP client
     uv run bikelake-mcp --http --port 8000           # streamable HTTP at /mcp
+
+Over HTTP, set MCP_ACCESS_KEY to require `Authorization: Bearer <key>` on every request.
 """
 
 import argparse
+import hmac
+import os
 
+import uvicorn
 from mcp.server.mcpserver import MCPServer
+from mcp.server.transport_security import TransportSecuritySettings
 
 from bikelake import semantic, warehouse
 
@@ -72,6 +78,24 @@ def run_sql(sql: str) -> dict:
     return {**warehouse.run(checked), "sql": checked}
 
 
+class RequireAccessKey:
+    """Turn away HTTP requests without `Authorization: Bearer <key>` before they reach any tool."""
+
+    def __init__(self, app, key: str):
+        self.app = app
+        self.expected = f"Bearer {key}".encode()
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            given = dict(scope["headers"]).get(b"authorization", b"")
+            if not hmac.compare_digest(given, self.expected):
+                await send({"type": "http.response.start", "status": 401,
+                            "headers": [(b"content-type", b"text/plain"), (b"www-authenticate", b"Bearer")]})
+                await send({"type": "http.response.body", "body": b"Missing or wrong access key.\n"})
+                return
+        await self.app(scope, receive, send)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="bikelake-mcp")
     parser.add_argument("--http", action="store_true", help="serve streamable HTTP instead of stdio")
@@ -79,10 +103,21 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
 
-    if args.http:
-        server.run(transport="streamable-http", host=args.host, port=args.port)
-    else:
+    if not args.http:
         server.run()
+        return
+
+    # Behind a public hostname, accept only requests addressed to it (DNS rebinding protection).
+    security = None
+    if hosts := [h.strip() for h in os.getenv("MCP_ALLOWED_HOSTS", "").split(",") if h.strip()]:
+        security = TransportSecuritySettings(
+            allowed_hosts=hosts + ["localhost:*", "127.0.0.1:*"],
+            allowed_origins=[f"https://{h}" for h in hosts],
+        )
+    app = server.streamable_http_app(host=args.host, transport_security=security)
+    if key := os.getenv("MCP_ACCESS_KEY"):
+        app = RequireAccessKey(app, key)
+    uvicorn.run(app, host=args.host, port=args.port)
 
 
 if __name__ == "__main__":
