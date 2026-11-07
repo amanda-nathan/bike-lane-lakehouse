@@ -1,0 +1,133 @@
+# rustfs: S3 API on 9000, console on 9001
+# iceberg-rest: catalog on 8181
+# trino: 8080
+# postgres: 5432 (live Bluebikes station status)
+# dagster: 3000 (schedules and runs the loads)
+# jupyter: 8888 (notebooks)
+#
+# Secrets come from .env (copy .env.example).
+
+services:
+  rustfs:
+    image: rustfs/rustfs:1.0.4
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:?set in .env, see .env.example}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:?set in .env, see .env.example}
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - s3-data:/data
+
+  # creates the landing and warehouse buckets, then exits
+  s3-init:
+    image: amazon/aws-cli:2.27.50
+    depends_on:
+      - rustfs
+    environment:
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:?set in .env, see .env.example}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:?set in .env, see .env.example}
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint: >
+      /bin/sh -c "
+      until aws --endpoint-url http://rustfs:9000 s3 ls >/dev/null 2>&1; do sleep 1; done;
+      aws --endpoint-url http://rustfs:9000 s3 mb s3://landing 2>/dev/null || true;
+      aws --endpoint-url http://rustfs:9000 s3 mb s3://warehouse 2>/dev/null || true;
+      aws --endpoint-url http://rustfs:9000 s3 ls
+      "
+
+  iceberg-rest:
+    image: apache/iceberg-rest-fixture:1.9.1
+    depends_on:
+      s3-init:
+        condition: service_completed_successfully
+    environment:
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:?set in .env, see .env.example}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:?set in .env, see .env.example}
+      AWS_REGION: us-east-1
+      CATALOG_WAREHOUSE: s3://warehouse/
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://rustfs:9000
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+      # default is in-memory; keep the catalog across restarts
+      CATALOG_URI: jdbc:sqlite:file:/catalog/iceberg_catalog.db
+    user: root
+    ports:
+      - "127.0.0.1:8181:8181"
+    volumes:
+      - catalog-data:/catalog
+
+  postgres:
+    image: postgres:17.5
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set in .env, see .env.example}
+      POSTGRES_USER: ${POSTGRES_USER:?set in .env, see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env, see .env.example}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+  trino:
+    image: trinodb/trino:476
+    depends_on:
+      - iceberg-rest
+      - postgres
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?set in .env, see .env.example}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?set in .env, see .env.example}
+      POSTGRES_USER: ${POSTGRES_USER:?set in .env, see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env, see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:?set in .env, see .env.example}
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./trino/catalog:/etc/trino/catalog:ro
+
+  dagster:
+    build:
+      context: .
+      target: app
+    depends_on:
+      - iceberg-rest
+      - postgres
+    environment:
+      S3_ENDPOINT: http://rustfs:9000
+      ICEBERG_REST_URI: http://iceberg-rest:8181
+      POSTGRES_HOST: postgres
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?set in .env, see .env.example}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?set in .env, see .env.example}
+      POSTGRES_USER: ${POSTGRES_USER:?set in .env, see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env, see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:?set in .env, see .env.example}
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - dagster-home:/dagster_home
+
+  jupyter:
+    build:
+      context: .
+      target: notebook
+    depends_on:
+      - trino
+    environment:
+      TRINO_HOST: trino
+      S3_ENDPOINT: http://rustfs:9000
+      ICEBERG_REST_URI: http://iceberg-rest:8181
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?set in .env, see .env.example}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?set in .env, see .env.example}
+    ports:
+      - "127.0.0.1:8888:8888"  # no login, so only reachable from this machine
+    volumes:
+      - ./notebooks:/app/notebooks
+      - ./sql:/app/sql:ro
+
+volumes:
+  s3-data:
+  catalog-data:
+  pg-data:
+  dagster-home:

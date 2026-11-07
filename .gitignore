@@ -1,0 +1,25 @@
+# secrets
+.env
+
+# downloaded data (re-downloadable from src/bikelake/sources.py)
+data/
+*.csv
+*.parquet
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# jupyter
+.ipynb_checkpoints/
+
+# dbt / dagster
+target/
+dbt_packages/
+logs/
+.dagster/
+.tmp_dagster_home*/
+
+.DS_Store
