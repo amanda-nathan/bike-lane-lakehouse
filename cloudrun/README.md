@@ -78,4 +78,6 @@ Problems hit during the first deploy, and the fixes now in place:
 
 ## Refreshing the data
 
-The server reads whatever is in R2. To publish new data, materialize the `public/marts` asset in the local Dagster (http://localhost:3000). No redeploy is needed.
+The server reads whatever is in R2, so new data needs no redeploy. GitHub Actions republishes every day at 6:30 am Eastern (`.github/workflows/refresh.yml`). To refresh sooner, run that workflow from the Actions tab or with `gh workflow run refresh.yml`, or materialize `public/marts` in the local Dagster.
+
+The workflow writes with the R2 **write** key, stored as GitHub repository secrets (`R2_*`). The server only ever has the read-only key.

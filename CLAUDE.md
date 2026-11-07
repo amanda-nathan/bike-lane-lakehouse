@@ -35,6 +35,10 @@ sql/                      example Trino queries, numbered
 notebooks/                example notebooks
 examples/                 reading the tables without Trino
 docs/decisions/           one numbered file per decision
+src/bikelake/publish.py   copy the marts to Cloudflare R2 (public/marts asset)
+cloudrun/                 public MCP server on Cloud Run: deploy.sh, build config, cleanup rule
+space/                    Hugging Face Space version (not deployed; needs PRO)
+.github/workflows/        refresh.yml: daily Dagster run on a temporary stack, publishes to R2
 ```
 
 ## Commands

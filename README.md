@@ -4,6 +4,12 @@ Boston and New York City bike, traffic, and crash data in Apache Iceberg tables,
 
 I live near Hyde Park Ave in Roslindale, which has no bike lane; the City is [looking at a redesign](https://www.boston.gov/departments/transportation/project/hyde-park-avenue-multimodal-corridor). New York publishes when every bike lane went in, so it's a good place to see what changes after one does.
 
+**Bottom line**
+
+- **Riding near me is up.** Summer bike counts on Washington St in Roslindale went from about 330 a day in 2018 to 574 in 2026, while car traffic stayed flat. Each summer is only two count days, so treat the size of the jump as rough.
+- **The NYC data can't show whether protected lanes make streets safer.** Cyclists hurt within 50 m of new lanes rose 17%, against 1.7% citywide, but lanes go where riding is growing and there's no per-street ridership count to adjust for it.
+- **Putting the caveats in the metrics made AI answers more honest.** Asked through MCP, a small model gave the right number and the right caveat 29 of 30 times using the metrics, and 26 of 30 writing its own SQL. A large model got all 30 either way ([eval](evals/RESULTS.md)).
+
 ![Cyclists hurt near new NYC protected lanes vs. citywide](docs/img/new_lanes_by_borough.png)
 
 Cyclists hurt near new protected lanes rose 17%, against 1.7% citywide. That doesn't mean the lanes made streets worse: lanes go where riding is growing, and there's no per-street ridership count to adjust for it. Those caveats are attached to the metric, so they come back with every answer built on it.
@@ -22,6 +28,9 @@ Cyclists hurt near new protected lanes rose 17%, against 1.7% citywide. That doe
 | Dagster | `src/bikelake/defs.py` | Loads, dbt models, schedules, and checks in one asset graph |
 | MCP server | `src/bikelake/mcp_server.py` | Metrics and read-only SQL for AI clients |
 | Eval | `evals/` | Accuracy of semantic-layer queries vs. plain text-to-SQL |
+| Cloudflare R2 | `src/bikelake/publish.py` | Public copy of the mart tables, in Cloudflare's Iceberg catalog |
+| Cloud Run | `cloudrun/` | Public MCP server: Trino reading R2 with a read-only key, behind an access key |
+| GitHub Actions | `.github/workflows/refresh.yml` | Runs the Dagster job daily and republishes to R2 |
 
 Conventions and commands: [CLAUDE.md](CLAUDE.md). Why it's built this way: [docs/decisions/](docs/decisions/).
 
@@ -48,6 +57,18 @@ Then open Dagster, go to **Catalog**, select all assets, and click **Materialize
 
 Ports are bound to 127.0.0.1 only. To use the MCP server from Claude Code: `claude mcp add --transport http bikelake http://localhost:8000/mcp`.
 
+## How the public data stays current
+
+```
+sources ──▶ Dagster job ──▶ Iceberg + dbt (Trino) ──▶ marts ──▶ Cloudflare R2 ──▶ Cloud Run MCP server ──▶ Claude
+            (daily on GitHub Actions, or on demand locally)
+```
+
+Every day at 6:30 am Eastern, GitHub Actions starts a temporary lakehouse on its runner, runs the same Dagster job as the local stack (download every source, load, `dbt build` with tests, publish), and shuts down. The public server reads R2 directly, so new data shows up without a redeploy. It's free: GitHub doesn't charge public repos for Actions minutes.
+
+To refresh now: **Actions > Refresh public data > Run workflow** on GitHub, or `gh workflow run refresh.yml`. From the local stack, materialize `public/marts` in Dagster.
+
+NYC Open Data sometimes turns away anonymous downloads from GitHub's machines with a 503. The loads retry, and if it keeps happening, a free NYC Open Data app token saved as the `SOCRATA_APP_TOKEN` repository secret lifts the limit.
 
 ## Use the public server
 
@@ -133,13 +154,14 @@ Claude answered questions through the MCP server with SQL tools only, and with t
 
 Quirks the staging models handle: Boston count times are UTC, Bluebikes times are local; trips across the November clock change end before they start; a few rows are duplicated at the source; NYC route records are versioned. About 29% of NYC crashes have no borough.
 
-Schedules: NYC crashes daily, the other sources weekly, Bluebikes monthly, station status hourly. Each schedule rebuilds only the models downstream of its source. They're off until turned on in Dagster.
+Local Dagster schedules (off until turned on): NYC crashes daily, the other sources weekly, Bluebikes monthly, station status hourly. Each one rebuilds only the models downstream of its source and republishes to R2. The public data is refreshed by GitHub Actions either way.
 
 ## Not built yet
 
 - A mart with one row per crash near a new lane, to fix a double count the eval found
 - Larger tables: NYC traffic speeds and Citi Bike trips
-- Compaction and snapshot expiry jobs; incremental loads for NYC crashes
+- Incremental loads for NYC crashes, instead of a full reload
+- Compaction and snapshot expiry for the local tables (Cloudflare does both for the public copy)
 - Trino access control and column masking
-- CI
+- CI that runs the tests on pull requests
 - `space/` is a Hugging Face Space version of the public server. It wasn't deployed: Hugging Face now requires a PRO subscription to run Docker Spaces on free hardware.
