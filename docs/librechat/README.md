@@ -1,6 +1,6 @@
 # Use the public server from LibreChat
 
-[LibreChat](https://www.librechat.ai) is a free, open-source chat app you run yourself ([GitHub](https://github.com/danny-avila/LibreChat), MIT license). You pick the model (Claude, OpenAI, or a free model on your own computer), add the bikelake server, and ask questions in plain English, like in Claude Code. Boston University's TerrierGPT is built on LibreChat.
+[LibreChat](https://www.librechat.ai) is a free, open-source chat app you run yourself ([GitHub](https://github.com/danny-avila/LibreChat), MIT license). You pick the model (Claude, OpenAI, or a free model on your own computer), add the bikelake server, and ask questions in plain English, like in Claude Code.
 
 Tested November 7, 2026 with LibreChat v0.8.9-rc1 and Claude Haiku 5.5. Each person enters their own access key in the app, so no key goes in a config file.
 

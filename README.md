@@ -139,7 +139,7 @@ Claude looked up the location, queried the summer metric, then checked the indiv
 
 ### LibreChat
 
-[LibreChat](docs/librechat/README.md) is a free, open-source chat app you run in Docker. You add the server once in its config file, each person types their own access key into the app, and then you ask questions in plain English with Claude or another model. Boston University's TerrierGPT is built on LibreChat. Setup, the config, and screenshots of every step: [docs/librechat/README.md](docs/librechat/README.md).
+[LibreChat](docs/librechat/README.md) is a free, open-source chat app you run in Docker. You add the server once in its config file, each person types their own access key into the app, and then you ask questions in plain English with Claude or another model. Setup, the config, and screenshots of every step: [docs/librechat/README.md](docs/librechat/README.md).
 
 ### Free alternative: MCP Inspector
 
