@@ -60,4 +60,4 @@ uv run bikelake-knowledge demo    # the example above, in a temporary copy
 
 ## Limits
 
-Facts are found by pattern (numbers with units, dates, dollar amounts), so "half a block" is missed. `ask` takes a concept, not a question; matching a question to a concept is the agent's job.
+Facts are found by pattern (numbers with units, dates, dollar amounts), so "half a block" is missed. In policy text, meaning can change without a number changing ("full-time students" becomes "all students"). The pattern check would call that rewording, so for policies you'd need a language model comparing meaning, or a person reviewing every change. `ask` takes a concept, not a question; matching a question to a concept is the agent's job.
