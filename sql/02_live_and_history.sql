@@ -1,7 +1,7 @@
 -- Live Bluebikes station status (Postgres) next to a year of trip history (Iceberg),
 -- in one Trino query. Run `uv run bikelake stations` first to take a snapshot of the feed.
 
--- Stations near BU: bikes and docks right now, and how many trips usually start
+-- Stations near Boston University: bikes and docks right now, and how many trips usually start
 -- there at this hour on this day of the week.
 WITH now_local AS (
     SELECT current_timestamp AT TIME ZONE 'America/New_York' AS ts
