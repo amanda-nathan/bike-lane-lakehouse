@@ -58,6 +58,9 @@ uv run bikelake-knowledge ask near_new_lane
 uv run bikelake-knowledge demo    # the example above, in a temporary copy
 ```
 
-## Limits
+## What's missing for a real setup
 
-Facts are found by pattern (numbers with units, dates, dollar amounts), so "half a block" is missed. In policy text, meaning can change without a number changing ("full-time students" becomes "all students"). The pattern check would call that rewording, so for policies you'd need a language model comparing meaning, or a person reviewing every change. `ask` takes a concept, not a question; matching a question to a concept is the agent's job.
+- A schedule. The check runs by hand and in GitHub Actions. A real one would be a Dagster job that asks the source systems (like WordPress or SharePoint) which pages changed since the last run, and only re-reads those.
+- A language model comparing meaning. Facts are found by pattern (numbers with units, dates, dollar amounts), so "half a block" is missed, and a policy can change meaning without a number changing ("full-time students" becomes "all students"). A model could compare the two versions and say whether a fact changed, like the LLM judge in [the eval](../evals/).
+- A place for owners to approve. Here approval is a command. In a catalog like OpenMetadata, each office could be the reviewer for its glossary terms, so a changed term waits as a draft until they approve it.
+- A real agent. `ask` takes a concept, not a question. An agent would match the question to a concept, then answer from the approved text, for example through an MCP tool.
