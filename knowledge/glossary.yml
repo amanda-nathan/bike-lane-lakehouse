@@ -1,0 +1,27 @@
+# One entry per concept. The owner is accountable for the definition: their page is the
+# definition, and other pages that mention the concept must agree with it.
+# dbt metrics link to these terms in config.meta.glossary_terms (dbt/models/marts/_semantic.yml).
+
+near_new_lane:
+  label: Near a new lane
+  owner: nyc-safety
+
+new_lane:
+  label: Which lanes count as new
+  owner: nyc-safety
+
+count_day:
+  label: Count day
+  owner: boston-counts
+
+season:
+  label: Comparing seasons
+  owner: boston-counts
+
+bluebikes_window:
+  label: Bluebikes history
+  owner: bluebikes
+
+trip_length:
+  label: Trip length
+  owner: bluebikes

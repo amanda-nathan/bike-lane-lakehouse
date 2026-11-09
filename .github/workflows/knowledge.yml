@@ -1,0 +1,24 @@
+name: Knowledge check
+
+# Fails when a page changed a fact its owner hasn't approved, when two pages disagree,
+# or when a dbt metric no longer matches the glossary. Wording-only changes pass.
+on:
+  pull_request:
+    paths: ["knowledge/**", "dbt/models/marts/_semantic.yml", "src/bikelake/knowledge.py"]
+  push:
+    branches: [main]
+    paths: ["knowledge/**", "dbt/models/marts/_semantic.yml", "src/bikelake/knowledge.py"]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen
+      - run: uv run bikelake-knowledge check
+      - run: uv run pytest tests/test_knowledge.py

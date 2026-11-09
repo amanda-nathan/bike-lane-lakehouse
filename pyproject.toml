@@ -25,6 +25,7 @@ dependencies = [
 [project.scripts]
 bikelake = "bikelake.cli:main"
 bikelake-mcp = "bikelake.mcp_server:main"
+bikelake-knowledge = "bikelake.knowledge:main"
 
 [build-system]
 requires = ["hatchling"]

@@ -48,6 +48,7 @@ Everything runs in Docker on a laptop. For the public copy, GitHub Actions runs 
 | Dagster | [`src/bikelake/defs.py`](src/bikelake/defs.py) | Loads, dbt models, schedules, and checks in one asset graph |
 | MCP server | [`src/bikelake/mcp_server.py`](src/bikelake/mcp_server.py) | Metrics and read-only SQL for AI clients |
 | Eval | [`evals/`](evals/) | Accuracy of semantic-layer queries vs. plain text-to-SQL |
+| Approved knowledge | [`knowledge/`](knowledge/) | Owner-approved definitions for an agent; catches fact changes, stale copies on other pages, and metrics out of sync |
 | Cloudflare R2 | [`src/bikelake/publish.py`](src/bikelake/publish.py) | Public copy of the mart tables, in Cloudflare's Iceberg catalog |
 | Cloud Run | [`cloudrun/`](cloudrun/) | Public MCP server: Trino reading R2 with a read-only key, behind an access key |
 | GitHub Actions | [`.github/workflows/refresh.yml`](.github/workflows/refresh.yml) | Runs the Dagster job daily and republishes to R2 |

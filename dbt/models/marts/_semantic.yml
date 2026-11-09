@@ -183,6 +183,7 @@ metrics:
       measure: count_bikes_average
     config:
       meta:
+        glossary_terms: [count_day, season]
         caveats:
           - Each location is counted for about two days, a few times a year. Small samples move a lot.
           - Compare the same season across years. Since 2020 the City also counts in winter and spring, which lowers all-season averages.
@@ -194,6 +195,9 @@ metrics:
     type: simple
     type_params:
       measure: count_days
+    config:
+      meta:
+        glossary_terms: [count_day]
 
   - name: boston_bikes_counted
     label: Boston bikes counted
@@ -260,6 +264,7 @@ metrics:
       measure: trip_count
     config:
       meta:
+        glossary_terms: [bluebikes_window]
         caveats:
           - Only the latest 12 months of trips are loaded. The earliest month is partial (trips that started on its last day).
 
@@ -304,6 +309,7 @@ metrics:
       denominator: bluebikes_trips_with_duration
     config:
       meta:
+        glossary_terms: [trip_length]
         caveats:
           - Trips across the November clock change have no usable duration and are left out.
 
@@ -367,18 +373,27 @@ metrics:
     type: simple
     type_params:
       measure: lane_segment_count
+    config:
+      meta:
+        glossary_terms: [new_lane]
 
   - name: new_lane_cyclists_hurt_before
     label: Cyclists hurt near new lanes, 2 years before
     type: simple
     type_params:
       measure: hurt_before
+    config:
+      meta:
+        glossary_terms: [near_new_lane]
 
   - name: new_lane_cyclists_hurt_after
     label: Cyclists hurt near new lanes, 2 years after
     type: simple
     type_params:
       measure: hurt_after
+    config:
+      meta:
+        glossary_terms: [near_new_lane]
 
   - name: citywide_cyclists_hurt_before
     label: Citywide cyclists hurt, same windows before
@@ -405,6 +420,7 @@ metrics:
           alias: before
     config:
       meta:
+        glossary_terms: [near_new_lane]
         caveats:
           - Always compare with citywide_injury_change over the same windows; citywide injuries changed too.
           - Lanes go where riding is growing. More riders after a lane opens means more exposure, and there is no ridership count per street to adjust for it.

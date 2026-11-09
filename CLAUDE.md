@@ -23,12 +23,14 @@ src/bikelake/
   config.py               endpoints and secrets from the environment
   storage.py              S3 filesystem helper
   cli.py                  bikelake list | extract | load | run | stations
+  knowledge.py            approved knowledge: change, stale-copy, and metric checks; fixes (bikelake-knowledge)
 dbt/
   models/staging/         views: types, names, local time, dedupe
   models/intermediate/    tables: lane installs, crash-to-lane spatial join
   models/marts/           tables with enforced contracts; _semantic.yml holds metrics
   tests/                  singular tests
 evals/                    questions, run_eval.py, results/, RESULTS.md
+knowledge/                owner pages by concept, glossary.yml, approved.yml (what the agent may say)
 docs/charts.py            charts for the README and eval write-up (docs/img)
 tests/                    pytest; test_schema_changes needs the stack running
 sql/                      example Trino queries, numbered
@@ -39,7 +41,7 @@ src/bikelake/publish.py   copy the marts to Cloudflare R2 (public/marts asset)
 cloudrun/                 public MCP server on Cloud Run: deploy.sh, build config, cleanup rule
 space/                    Hugging Face Space version (not deployed; needs PRO)
 huggingface/              public dataset (publish_dataset.py) and static Explorer page (space/, deploy_space.py)
-.github/workflows/        refresh.yml: daily Dagster run on a temporary stack, publishes to R2
+.github/workflows/        refresh.yml: daily Dagster run on a temporary stack, publishes to R2; knowledge.yml: the knowledge check
 ```
 
 ## Commands
@@ -56,6 +58,7 @@ cd dbt && uv run dbt parse --profiles-dir .          # refresh dbt/target after 
 cd dbt && uv run mf validate-configs                 # check the semantic layer against Trino
 cd dbt && uv run mf query --metrics <m> --group-by <d>
 uv run bikelake-mcp                                  # MCP server over stdio
+uv run bikelake-knowledge check                      # knowledge changes, conflicts, metrics out of sync
 uv run --group eval python evals/run_eval.py --dry-run
 uv run --group docs python docs/charts.py              # preview the charts locally (the daily workflow commits them)
 docker compose down                                  # stop, keep data
@@ -77,6 +80,7 @@ docker compose down -v                               # stop and delete all data
 - New services bind ports to 127.0.0.1. Services that run a JVM get a `mem_limit`.
 - Boston count times are UTC in the source; Bluebikes trip times are local.
 - The README charts (`docs/img`) are drawn and committed by the daily workflow. Don't commit charts drawn on a laptop: Mac and Linux render text slightly differently, so the two would keep replacing each other.
+- Metrics that depend on a defined concept list it in `config.meta.glossary_terms`. After editing a page in `knowledge/sources/`, run `bikelake-knowledge check`; the owner approves fact changes with `bikelake-knowledge approve <chunk>`. Other pages point to a definition with `{{ term: kind }}` rather than copying its facts.
 - New design decisions get a numbered file in `docs/decisions/`.
 - Comments and docs are short and plain. Commit messages are one short line.
 
