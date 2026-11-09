@@ -343,7 +343,7 @@ def demo() -> None:
         root, semantic = Path(tmp) / "knowledge", Path(tmp) / "_semantic.yml"
         shutil.copytree(KNOWLEDGE, root)
         shutil.copy(SEMANTIC, semantic)
-        page, faq_id = root / "sources/nyc-safety/new-lanes.md", "public-site/faq#near_new_lane"
+        page, faq_id = root / "sources/lane-analysis/new-lanes.md", "website/faq#near_new_lane"
 
         def edit(path: Path, old: str, new: str) -> None:
             path.write_text(path.read_text().replace(old, new, 1))
@@ -352,22 +352,22 @@ def demo() -> None:
             print(f"\n=== {title}\n")
             report(check(root, semantic, write=write))
             print(f"\nagent, asked about near_new_lane:\n  {ask('near_new_lane', root)}")
-            print(f"public-site FAQ shows:\n  {show(faq_id, root)}")
+            print(f"website FAQ shows:\n  {show(faq_id, root)}")
 
         step("0. Starting point")
         edit(page, "A crash counts as near a new protected lane if it happened within", "We count a crash as near a new protected lane when it's within")
-        step("1. nyc-safety rewords its page. The facts stay the same.", write=True)
+        step("1. lane-analysis rewords its page. The facts stay the same.", write=True)
         edit(page, "about 50 meters (half a block)", "about 75 meters")
-        step("2. nyc-safety changes 50 meters to 75 meters")
-        approve(["nyc-safety/new-lanes#near_new_lane"], root)
-        step("3. nyc-safety approves. The agent says 75; the FAQ copy and the dbt metric still say 50.")
+        step("2. lane-analysis changes 50 meters to 75 meters")
+        approve(["lane-analysis/new-lanes#near_new_lane"], root)
+        step("3. lane-analysis approves. The agent says 75; the FAQ copy and the dbt metric still say 50.")
         fix(faq_id, root)
         edit(semantic, "about 50 meters (half a block)", "about 75 meters")
-        step("4. public-site accepts the suggested fix, and the metric description is updated")
+        step("4. website accepts the suggested fix, and the metric description is updated")
         edit(page, "about 75 meters", "about 60 meters")
-        approve(["nyc-safety/new-lanes#near_new_lane"], root)
+        approve(["lane-analysis/new-lanes#near_new_lane"], root)
         edit(semantic, "about 75 meters", "about 60 meters")
-        step("5. nyc-safety changes it again, to 60 meters, and the metric is updated. Nobody touches the FAQ.")
+        step("5. lane-analysis changes it again, to 60 meters, and the metric is updated. Nobody touches the FAQ.")
 
 
 def main() -> None:

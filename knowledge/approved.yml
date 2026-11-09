@@ -1,85 +1,85 @@
 # Written by `bikelake-knowledge approve`, `fix`, and `check --write`. The agent answers only from this file.
 
-bluebikes/trips#bluebikes_window:
+trip-analysis/trips#bluebikes_window:
   approved: '2026-11-09'
-  by: bluebikes
+  by: trip-analysis
   facts:
   - 12 months
   hash: 04aba88f2e70
-  owner: bluebikes
+  owner: trip-analysis
   term: bluebikes_window
   text: Only the latest 12 months of trips are loaded. The earliest month is partial.
-bluebikes/trips#trip_length:
+trip-analysis/trips#trip_length:
   approved: '2026-11-09'
-  by: bluebikes
+  by: trip-analysis
   facts:
   - November
   hash: 484a4e4ec983
-  owner: bluebikes
+  owner: trip-analysis
   term: trip_length
   text: >-
     Trips across the November clock change have no usable duration and are left out of average trip length.
-boston-counts/how-counts-work#count_day:
+count-analysis/how-counts-work#count_day:
   approved: '2026-11-09'
-  by: boston-counts
+  by: count-analysis
   facts:
   - 2 days
   hash: a8e243ecf90c
-  owner: boston-counts
+  owner: count-analysis
   term: count_day
   text: >-
     Each location is counted for about two days, a few times a year, so small samples move a lot. Report
     the number of count days alongside any average.
-boston-counts/how-counts-work#season:
+count-analysis/how-counts-work#season:
   approved: '2026-11-09'
-  by: boston-counts
+  by: count-analysis
   facts:
   - '2020'
   hash: 94e82959f7cc
-  owner: boston-counts
+  owner: count-analysis
   term: season
   text: >-
     Since 2020 the City also counts in winter and spring, which lowers all-season averages. Compare the
     same season across years.
-nyc-safety/new-lanes#near_new_lane:
+lane-analysis/new-lanes#near_new_lane:
   approved: '2026-11-09'
-  by: nyc-safety
+  by: lane-analysis
   facts:
   - 2 years
   - 50 meters
   hash: 0b23ea5c268f
-  owner: nyc-safety
+  owner: lane-analysis
   term: near_new_lane
   text: >-
     A crash counts as near a new protected lane if it happened within about 50 meters (half a block) of
     the lane segment. We compare the 2 years before the lane went in with the 2 years after.
-nyc-safety/new-lanes#new_lane:
+lane-analysis/new-lanes#new_lane:
   approved: '2026-11-09'
-  by: nyc-safety
+  by: lane-analysis
   facts:
   - January 2015
   - July 2012
   - October 2024
   hash: 6a6320b41a6e
-  owner: nyc-safety
+  owner: lane-analysis
   term: new_lane
   text: >-
     Only segments that got their first protected lane between January 2015 and October 2024 count, so
     both windows fall inside the crash data, which starts in July 2012.
-public-site/faq#bluebikes_window:
+website/faq#bluebikes_window:
   approved: '2026-11-09'
-  by: public-site
+  by: website
   facts: []
   hash: e79b4c87c14b
-  owner: public-site
+  owner: website
   term: bluebikes_window
   text: 'The latest {{ bluebikes_window: months }}.'
-public-site/faq#near_new_lane:
+website/faq#near_new_lane:
   approved: '2026-11-09'
-  by: public-site
+  by: website
   facts:
   - 50 meters
   hash: 8aecbae1df6d
-  owner: public-site
+  owner: website
   term: near_new_lane
   text: Within about 50 meters of the new lane segment.

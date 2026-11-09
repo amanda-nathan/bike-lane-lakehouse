@@ -1,5 +1,5 @@
 ---
-owner: boston-counts
+owner: count-analysis
 ---
 
 # How Boston counts bikes

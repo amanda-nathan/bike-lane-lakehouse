@@ -4,24 +4,24 @@
 
 near_new_lane:
   label: Near a new lane
-  owner: nyc-safety
+  owner: lane-analysis
 
 new_lane:
   label: Which lanes count as new
-  owner: nyc-safety
+  owner: lane-analysis
 
 count_day:
   label: Count day
-  owner: boston-counts
+  owner: count-analysis
 
 season:
   label: Comparing seasons
-  owner: boston-counts
+  owner: count-analysis
 
 bluebikes_window:
   label: Bluebikes history
-  owner: bluebikes
+  owner: trip-analysis
 
 trip_length:
   label: Trip length
-  owner: bluebikes
+  owner: trip-analysis

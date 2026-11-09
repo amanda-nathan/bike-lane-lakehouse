@@ -1,5 +1,5 @@
 ---
-owner: bluebikes
+owner: trip-analysis
 ---
 
 # Bluebikes trips
