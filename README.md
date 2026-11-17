@@ -84,7 +84,7 @@ Every day at 6:30 am Eastern, GitHub Actions starts a temporary lakehouse on its
 
 To refresh now: **Actions > Refresh public data > Run workflow** on GitHub, or `gh workflow run refresh.yml`. From the local stack, materialize `public/marts` in Dagster.
 
-NYC Open Data sometimes turns away anonymous downloads from GitHub's machines with a 503. The loads retry, and if it keeps happening, a free NYC Open Data app token saved as the `SOCRATA_APP_TOKEN` repository secret lifts the limit.
+NYC Open Data sometimes turns away anonymous downloads from GitHub's machines with a 503. The loads retry, and if it keeps happening, a free NYC Open Data app token saved as the `SOCRATA_APP_TOKEN` repository secret lifts the limit. `scripts/set-socrata-token.sh` checks the token and saves the secret.
 
 ## Use the public server
 
