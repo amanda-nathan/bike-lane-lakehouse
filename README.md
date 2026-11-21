@@ -80,6 +80,8 @@ Everything is reachable only from your own computer (ports are bound to 127.0.0.
 
 ## How the public data stays current
 
+> **Paused since November 21, 2026.** The only thing that read the refreshed copy on R2 was the public server, which is shut down (see below), so the daily run is turned off for now. `gh workflow enable refresh.yml` turns it back on. While it's off, the README charts don't update either.
+
 Every day at 6:30 am Eastern, GitHub Actions starts a temporary lakehouse on its runner, runs the same Dagster job as the local stack (download every source, load, `dbt build` with tests, publish), and shuts down. The public server reads R2 directly, so new data shows up without a redeploy. It's free: GitHub doesn't charge public repos for Actions minutes.
 
 To refresh now: **Actions > Refresh public data > Run workflow** on GitHub, or `gh workflow run refresh.yml`. From the local stack, materialize `public/marts` in Dagster.
@@ -88,7 +90,7 @@ NYC Open Data sometimes turns away anonymous downloads from GitHub's machines wi
 
 ## Use the public server
 
-> **Offline since November 21, 2026.** The Google Cloud project was shut down to stop billing, so the URL below no longer answers. The rest of this section describes how it worked; [`cloudrun/README.md`](cloudrun/README.md#status) explains how to bring it back. The daily refresh to Cloudflare R2 still runs.
+> **Offline since November 21, 2026.** The Google Cloud project was shut down to stop billing, so the URL below no longer answers. The rest of this section describes how it worked; [`cloudrun/README.md`](cloudrun/README.md#status) explains how to bring it back. The daily refresh is paused too.
 
 A public copy of the MCP server runs on Google Cloud Run and reads the mart tables from Cloudflare R2 with a read-only key. Every request needs an access key: email me at hattawaya@gmail.com for one. Opening the URL in a browser shows "Missing or wrong access key"; that's expected.
 

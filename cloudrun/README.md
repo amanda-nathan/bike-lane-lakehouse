@@ -4,7 +4,9 @@ People you give the access key to can connect an AI client (Claude, for example)
 
 ## Status
 
-**Shut down on November 21, 2026.** A $1 budget alert on the billing account reached 50%, so the whole `bike-lane-lakehouse` Google Cloud project was shut down (`gcloud projects delete bike-lane-lakehouse`). That removed the Cloud Run service, the 1.6 GB of images in Artifact Registry, the Cloud Build bucket, and the secrets. The data on Cloudflare R2 and the GitHub Actions refresh are separate and unaffected.
+**Shut down on November 21, 2026.** A $1 budget alert on the billing account reached 50%, so the whole `bike-lane-lakehouse` Google Cloud project was shut down (`gcloud projects delete bike-lane-lakehouse`). That removed the Cloud Run service, the 1.6 GB of images in Artifact Registry, the Cloud Build bucket, and the secrets. The data on Cloudflare R2 is separate and still there.
+
+The daily GitHub Actions refresh was turned off the same day (`gh workflow disable refresh.yml`): with the server gone, nothing reads what it publishes. Turn it back on with `gh workflow enable refresh.yml` when the server comes back.
 
 To bring it back:
 
