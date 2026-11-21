@@ -88,6 +88,8 @@ NYC Open Data sometimes turns away anonymous downloads from GitHub's machines wi
 
 ## Use the public server
 
+> **Offline since November 21, 2026.** The Google Cloud project was shut down to stop billing, so the URL below no longer answers. The rest of this section describes how it worked; [`cloudrun/README.md`](cloudrun/README.md#status) explains how to bring it back. The daily refresh to Cloudflare R2 still runs.
+
 A public copy of the MCP server runs on Google Cloud Run and reads the mart tables from Cloudflare R2 with a read-only key. Every request needs an access key: email me at hattawaya@gmail.com for one. Opening the URL in a browser shows "Missing or wrong access key"; that's expected.
 
 URL: `https://bikelake-mcp-140130294299.us-east1.run.app/mcp` (Cloud Run gives each service an address like this: the service name, the Google Cloud project number, and the region)

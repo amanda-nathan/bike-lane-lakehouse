@@ -2,6 +2,15 @@
 
 People you give the access key to can connect an AI client (Claude, for example) to this server and ask about the data. Their client pays for its own questions; this server only runs the queries.
 
+## Status
+
+**Shut down on November 21, 2026.** A $1 budget alert on the billing account reached 50%, so the whole `bike-lane-lakehouse` Google Cloud project was shut down (`gcloud projects delete bike-lane-lakehouse`). That removed the Cloud Run service, the 1.6 GB of images in Artifact Registry, the Cloud Build bucket, and the secrets. The data on Cloudflare R2 and the GitHub Actions refresh are separate and unaffected.
+
+To bring it back:
+
+- **Until about December 21, 2026:** Google keeps a shut-down project for 30 days. `gcloud projects undelete bike-lane-lakehouse` restores it, and `SKIP_BUILD=1 cloudrun/deploy.sh` redeploys if the service doesn't come back on its own.
+- **After that:** the project is gone and its ID can't be used again. Deploy to a new project with `PROJECT=<new-id> cloudrun/deploy.sh <billing-account-id>`. The service URL will change, so update it in the top-level README.
+
 ## Why Cloud Run
 
 The first plan was a free Hugging Face Space ([`space/`](../space/)). Hugging Face now only runs Docker Spaces on free hardware for PRO subscribers, so the deploy failed with 402 Payment Required. Cloud Run runs the same container, has a free monthly allowance, and scales to zero when nobody is using it.
