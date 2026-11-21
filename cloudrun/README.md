@@ -8,6 +8,8 @@ People you give the access key to can connect an AI client (Claude, for example)
 
 The daily GitHub Actions refresh was turned off the same day (`gh workflow disable refresh.yml`): with the server gone, nothing reads what it publishes. Turn it back on with `gh workflow enable refresh.yml` when the server comes back.
 
+The read-only R2 key the server used (`bike-lane-lakehouse-read` in Cloudflare) was deleted the same day with [`scripts/revoke-r2-read-key.sh`](../scripts/revoke-r2-read-key.sh), and its lines in `.env` commented out. A redeploy needs a new read-only key: R2 > Manage API tokens > Create Account API token, Object Read only. Put its values in `.env` as `R2_READ_*`.
+
 To bring it back:
 
 - **Until about December 21, 2026:** Google keeps a shut-down project for 30 days. `gcloud projects undelete bike-lane-lakehouse` restores it, and `SKIP_BUILD=1 cloudrun/deploy.sh` redeploys if the service doesn't come back on its own.
