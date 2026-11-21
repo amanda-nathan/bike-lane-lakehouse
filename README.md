@@ -2,7 +2,13 @@
 
 Boston and New York City bike, traffic, and crash data in Apache Iceberg tables, modeled with dbt, scheduled with Dagster, and queried with Trino or by an AI client through MCP.
 
-> **Try it:** email hattawaya@gmail.com for an access key, [connect Claude Code or the free MCP Inspector](#use-the-public-server), and ask, for example, *"How have summer bike counts on Washington St in Roslindale changed since 2018?"* Or, with no key, [browse the tables on Hugging Face](#no-setup-browse-it-on-hugging-face).
+> **Paused since November 21, 2026.** A $1 Google Cloud budget alert reached 50%, so I shut down the public server to stop billing:
+>
+> - Shut down the `bike-lane-lakehouse` Google Cloud project: the Cloud Run server, its images, and its stored keys
+> - Turned off the daily GitHub Actions refresh, since the server was the only thing reading its output
+> - Deleted the server's read-only Cloudflare R2 key ([`scripts/revoke-r2-read-key.sh`](scripts/revoke-r2-read-key.sh))
+>
+> Everything still runs locally, and you can still [browse the tables on Hugging Face](#no-setup-browse-it-on-hugging-face) with no key. [`cloudrun/README.md`](cloudrun/README.md#status) explains how to bring the server back.
 
 I live near Hyde Park Ave in Roslindale, which has no bike lane; the City is [looking at a redesign](https://www.boston.gov/departments/transportation/project/hyde-park-avenue-multimodal-corridor). New York publishes when every bike lane went in, so it's a good place to see what changes after one does.
 
