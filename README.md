@@ -42,6 +42,51 @@ flowchart LR
 
 Everything runs in Docker on a laptop. For the public copy, GitHub Actions runs the same steps every morning and publishes the clean tables to Cloudflare R2, where the server on Cloud Run reads them.
 
+### The semantic layer
+
+"Metrics with caveats" in the diagram is the semantic layer: one file, [`dbt/models/marts/_semantic.yml`](dbt/models/marts/_semantic.yml), where each number is defined once, by name, on top of the dbt tables. Anyone asking for that number, a person or an AI, gets the same SQL and the same warnings.
+
+A metric looks like this:
+
+```yaml
+- name: boston_bike_crashes
+  label: Boston bike crashes
+  description: Crashes with an EMS dispatch that involved a person on a bike.
+  type: simple
+  type_params:
+    measure: boston_crash_count
+  filter: "{{ Dimension('boston_crash__mode') }} = 'bike'"
+  config:
+    meta:
+      caveats:
+        - Based on EMS dispatches, so crashes with no ambulance call are missing.
+        - Not directly comparable with NYC crash counts, which come from police reports.
+```
+
+[MetricFlow](https://docs.getdbt.com/docs/build/about-metricflow), the open-source engine behind the dbt Semantic Layer, turns a request for a metric into Trino SQL. To see the SQL it writes (this works without the stack running):
+
+```bash
+cd dbt && uv run mf query --metrics boston_bike_crashes --group-by metric_time__year --explain
+```
+
+```sql
+SELECT
+  metric_time__year
+  , SUM(boston_bike_crashes) AS boston_bike_crashes
+FROM (
+  SELECT
+    DATE_TRUNC('year', crash_date) AS metric_time__year
+    , mode AS boston_crash__mode
+    , 1 AS boston_bike_crashes
+  FROM "iceberg"."marts"."fct_boston_crashes" boston_crashes_src_10000
+) subq_2
+WHERE boston_crash__mode = 'bike'
+GROUP BY
+  metric_time__year
+```
+
+Drop `--explain` to run it and get the rows. The MCP server does the same thing for an AI client: `list_metrics` shows the metrics, and `query_metrics` returns the rows, the SQL, and the caveats ([`src/bikelake/semantic.py`](src/bikelake/semantic.py)). The caveats are this project's addition, kept in dbt's free-form `meta` field. A full walkthrough with real results: [docs/semantic-layer/README.md](docs/semantic-layer/README.md). Why it's built this way: [docs/decisions/0005-semantic-layer.md](docs/decisions/0005-semantic-layer.md).
+
 ## Stack
 
 | Piece | Where | What it does |
@@ -50,7 +95,7 @@ Everything runs in Docker on a laptop. For the public copy, GitHub Actions runs 
 | Iceberg REST catalog | [`catalog/`](catalog/) | Tracks each table's current metadata. Keeps its pointers in Postgres |
 | Trino | [`trino/catalog/`](trino/catalog/) | Queries Iceberg and Postgres |
 | Loaders | [`src/bikelake/`](src/bikelake/) | Download each source, load it into `iceberg.raw` |
-| dbt | [`dbt/`](dbt/) | Staging, intermediate, and mart models; tests; contracts; metrics with caveats |
+| dbt | [`dbt/`](dbt/) | Staging, intermediate, and mart models; tests; contracts; the semantic layer (metrics with caveats) |
 | Dagster | [`src/bikelake/defs.py`](src/bikelake/defs.py) | Loads, dbt models, schedules, and checks in one asset graph |
 | MCP server | [`src/bikelake/mcp_server.py`](src/bikelake/mcp_server.py) | Metrics and read-only SQL for AI clients |
 | Eval | [`evals/`](evals/) | Accuracy of semantic-layer queries vs. plain text-to-SQL |
